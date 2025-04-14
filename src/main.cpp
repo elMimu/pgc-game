@@ -1,98 +1,121 @@
 #include "raylib.h"
-#include <iostream>
+#include "raymath.h"
 
-#pragma region imgui
-#include "imgui.h"
-#include "rlImGui.h"
-#include "imguiThemes.h"
-#pragma endregion
+// DEFINING VIRTUAL RESOLUTION --------- //
+#define VIRTUAL_X 360
+#define VIRTUAL_Y 640
 
+// TRANSFORM OBJECT -------- //
+class TransformProps
+{
+public:
+  Vector2 position = {0.0f, 0.0f};
+  Vector2 size = {1.0f, 1.0f};
+  Vector2 origin = {0.5f, 0.5f};
+  float rotation = 0.0f;
+};
 
+// SCENE OBJECT ---------- //
+class Scene2DObject
+{
+public:
+  TransformProps transform;
+  Vector4 color;
+  Scene2DObject *parent = nullptr;
 
+  Scene2DObject() = default;
+
+  void init(Vector2 position = {0.0f, 0.0f}, Vector2 size = {10.0f, 10.0f},
+            Vector2 origin = {0.5f, 0.5f}, float rotation = 0.0f,
+            Vector4 color = {1.0f, 1.0f, 1.0f, 1.0f})
+  {
+    transform.position = position;
+    transform.size = size;
+    transform.origin = origin;
+    this->color = color;
+  };
+
+  TransformProps getWorldTransform(TransformProps current)
+  {
+    if (!parent)
+    {
+      return current;
+    }
+
+    TransformProps newTransform =
+        calculateParenting(parent->transform, current);
+
+    return parent->getWorldTransform(newTransform);
+  }
+
+  void draw()
+  {
+    TransformProps world = getWorldTransform(transform);
+    DrawRectanglePro(Rectangle{world.position.x, world.position.y,
+                               transform.size.x, transform.size.y},
+                     Vector2{transform.size.x * transform.origin.x,
+                             transform.size.y * transform.origin.y},
+                     RAD2DEG * world.rotation, ColorFromNormalized(color));
+  }
+
+private:
+  TransformProps calculateParenting(TransformProps p, TransformProps c)
+  {
+    TransformProps result;
+    result.position = Vector2Add(p.position, c.position);
+    result.rotation = p.rotation + c.rotation;
+    result.size = c.size;
+    return result;
+  }
+};
+
+// SCENE --------- //
+
+// STATES --------- //
+
+// STATE MACHINE ---------//
+
+// MINIGAME ---------- //
+
+// GAME STARTING POINT ---------- //
 int main(void)
 {
 
-	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-	InitWindow(800, 450, "raylib [core] example - basic window");
+  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+  InitWindow(VIRTUAL_X, VIRTUAL_Y, "First Minigame");
 
-#pragma region imgui
-	rlImGuiSetup(true);
+  SetTargetFPS(60);
 
-	//you can use whatever imgui theme you like!
-	//ImGui::StyleColorsDark();
-	//imguiThemes::yellow();
-	//imguiThemes::gray();
-	imguiThemes::green();
-	//imguiThemes::red();
-	//imguiThemes::embraceTheDarkness();
+  // Create parent object
+  Scene2DObject parent;
+  parent.init({VIRTUAL_X / 2.0f, VIRTUAL_Y / 2.0f}, {60, 60}, {0.5f, 0.5f},
+              0.0f, {1, 0, 0, 1});
 
+  // Create children
+  Scene2DObject child1;
+  child1.init({80, 0}, {30, 30}, {0.5f, 0.5f}, 0.0f, {0, 1, 0, 1});
+  child1.parent = &parent;
 
-	ImGuiIO &io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-	io.FontGlobalScale = 2;
+  Scene2DObject child2;
+  child2.init({-80, 0}, {30, 30}, {0.5f, 0.5f}, 0.0f, {0, 0, 1, 1});
+  child2.parent = &parent;
 
-	ImGuiStyle &style = ImGui::GetStyle();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		//style.WindowRounding = 0.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 0.5f;
-		//style.Colors[ImGuiCol_DockingEmptyBg].w = 0.f;
-	}
+  while (!WindowShouldClose())
+  {
+    float time = GetTime();
+    parent.transform.rotation = sinf(time) * 1.0f; // Oscillating rotation
 
-#pragma endregion
+    BeginDrawing();
+    ClearBackground(DARKGRAY);
 
+    parent.draw();
+    child1.draw();
+    child2.draw();
 
+    EndDrawing();
+  }
 
-	while (!WindowShouldClose())
-	{
-		BeginDrawing();
-		ClearBackground(RAYWHITE);
+  CloseWindow();
 
-
-	#pragma region imgui
-		rlImGuiBegin();
-
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, {});
-		ImGui::PushStyleColor(ImGuiCol_DockingEmptyBg, {});
-		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
-		ImGui::PopStyleColor(2);
-	#pragma endregion
-
-
-		ImGui::Begin("Test");
-
-		ImGui::Text("Hello");
-		ImGui::Button("Button");
-		ImGui::Button("Button2");
-
-		ImGui::End();
-
-
-		DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
-
-
-	#pragma region imgui
-		rlImGuiEnd();
-
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-		}
-	#pragma endregion
-
-		EndDrawing();
-	}
-
-
-#pragma region imgui
-	rlImGuiShutdown();
-#pragma endregion
-
-
-
-	CloseWindow();
-
-	return 0;
+  return 0;
 }
