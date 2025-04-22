@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include "raymath.h"
+#include <string>
 
 // DEFINING VIRTUAL RESOLUTION --------- //
 #define VIRTUAL_X 360
@@ -19,16 +20,18 @@ public:
 class Scene2DObject
 {
 public:
+  std::string identifier = "";
   TransformProps transform;
   Vector4 color;
   Scene2DObject *parent = nullptr;
 
   Scene2DObject() = default;
 
-  void init(Vector2 position = {0.0f, 0.0f}, Vector2 size = {10.0f, 10.0f},
-            Vector2 origin = {0.5f, 0.5f}, float rotation = 0.0f,
-            Vector4 color = {1.0f, 1.0f, 1.0f, 1.0f})
+  void init(std::string identifier, Vector2 position = {0.0f, 0.0f},
+            Vector2 size = {10.0f, 10.0f}, Vector2 origin = {0.5f, 0.5f},
+            float rotation = 0.0f, Vector4 color = {1.0f, 1.0f, 1.0f, 1.0f})
   {
+    this->identifier = identifier;
     transform.position = position;
     transform.size = size;
     transform.origin = origin;
@@ -88,16 +91,16 @@ int main(void)
 
   // Create parent object
   Scene2DObject parent;
-  parent.init({VIRTUAL_X / 2.0f, VIRTUAL_Y / 2.0f}, {60, 60}, {0.5f, 0.5f},
-              0.0f, {1, 0, 0, 1});
+  parent.init("abc", {VIRTUAL_X / 2.0f, VIRTUAL_Y / 2.0f}, {60, 60},
+              {0.5f, 0.5f}, 0.0f, {1, 0, 0, 1});
 
   // Create children
   Scene2DObject child1;
-  child1.init({80, 0}, {30, 30}, {0.5f, 0.5f}, 0.0f, {0, 1, 0, 1});
+  child1.init("abcd", {80, 0}, {30, 30}, {0.5f, 0.5f}, 0.0f, {0, 1, 0, 1});
   child1.parent = &parent;
 
   Scene2DObject child2;
-  child2.init({-80, 0}, {30, 30}, {0.5f, 0.5f}, 0.0f, {0, 0, 1, 1});
+  child2.init("abcdE", {-80, 0}, {30, 30}, {0.5f, 0.5f}, 0.0f, {0, 0, 1, 1});
   child2.parent = &parent;
 
   while (!WindowShouldClose())
