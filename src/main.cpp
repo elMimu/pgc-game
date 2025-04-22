@@ -1,6 +1,8 @@
 #include "list"
 #include "raylib.h"
 #include "raymath.h"
+#include <cstdio>
+#include <iostream>
 #include <string>
 #include <unordered_map>
 
@@ -23,6 +25,7 @@ class Scene2DObject
 {
 public:
   std::string identifier = "";
+  bool alive = true;
   TransformProps transform;
   Vector4 color;
   Scene2DObject *parent = nullptr;
@@ -63,6 +66,8 @@ public:
                      RAD2DEG * world.rotation, ColorFromNormalized(color));
   }
 
+  void destroy() { alive = false; }
+
 private:
   TransformProps calculateParenting(TransformProps p, TransformProps c)
   {
@@ -86,17 +91,24 @@ public:
     // TODO add exception when same identifier
     order.push_back(obj.identifier);
     all.insert({obj.identifier, obj});
-  }
+  };
 
   void draw()
   {
-    // TODO add a object destroy handler
-    for (std::string id : order)
+    auto it = order.begin();
+    while (it != order.end())
     {
-      if (all.find(id) != all.end())
+      auto found = all.find(*it);
+      if (found != all.end() && found->second.alive)
       {
-        all.at(id).draw();
-      };
+        found->second.draw();
+        ++it;
+      }
+      else
+      {
+        all.erase(found->second.identifier);
+        it = order.erase(it);
+      }
     }
   }
 };
@@ -137,6 +149,7 @@ int main(void)
   mainScene.add(child1);
   mainScene.add(child2);
 
+  bool once = true;
   while (!WindowShouldClose())
   {
     float time = GetTime();
@@ -146,6 +159,12 @@ int main(void)
     ClearBackground(DARKGRAY);
 
     mainScene.draw();
+    if (time >= 10.0 && once)
+    {
+      once = false;
+      child1.destroy();
+      std::cout << child1.identifier << std::endl;
+    }
 
     parent.draw();
 
