@@ -1,6 +1,8 @@
+#include "list"
 #include "raylib.h"
 #include "raymath.h"
 #include <string>
+#include <unordered_map>
 
 // DEFINING VIRTUAL RESOLUTION --------- //
 #define VIRTUAL_X 360
@@ -73,6 +75,31 @@ private:
 };
 
 // SCENE --------- //
+class Scene
+{
+public:
+  std::unordered_map<std::string, Scene2DObject &> all;
+  std::list<std::string> order;
+
+  void add(Scene2DObject &obj)
+  {
+    // TODO add exception when same identifier
+    order.push_back(obj.identifier);
+    all.insert({obj.identifier, obj});
+  }
+
+  void draw()
+  {
+    // TODO add a object destroy handler
+    for (std::string id : order)
+    {
+      if (all.find(id) != all.end())
+      {
+        all.at(id).draw();
+      };
+    }
+  }
+};
 
 // STATES --------- //
 
@@ -100,8 +127,15 @@ int main(void)
   child1.parent = &parent;
 
   Scene2DObject child2;
-  child2.init("abcdE", {-80, 0}, {30, 30}, {0.5f, 0.5f}, 0.0f, {0, 0, 1, 1});
+  child2.init("abcde", {-80, 0}, {30, 30}, {0.5f, 0.5f}, 0.0f, {0, 0, 1, 1});
   child2.parent = &parent;
+
+  // Create Scene;
+  Scene mainScene;
+
+  mainScene.add(parent);
+  mainScene.add(child1);
+  mainScene.add(child2);
 
   while (!WindowShouldClose())
   {
@@ -111,9 +145,9 @@ int main(void)
     BeginDrawing();
     ClearBackground(DARKGRAY);
 
+    mainScene.draw();
+
     parent.draw();
-    child1.draw();
-    child2.draw();
 
     EndDrawing();
   }
