@@ -5,6 +5,7 @@
 #include <iostream>
 #include <ostream>
 #include <set>
+#include <stack>
 #include <unordered_map>
 
 // DEFINING VIRTUAL RESOLUTION --------- //
@@ -101,8 +102,6 @@ public:
 
   void draw()
   {
-    renderManager.print();
-    // std::cout << "a" << std::endl;
     for (auto &[e, d] : renderManager.getAll())
     {
       if (d.active)
@@ -118,6 +117,84 @@ public:
   }
 };
 
+// SCENE INTERFACE --------- //
+class IScene
+{
+public:
+  bool isLoaded = false;
+  bool isFinished = false;
+
+  void inputHandler()
+  {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+      isFinished = true;
+    }
+  }
+  virtual void onLoad() = 0;
+  void onUpdate(float dt) { inputHandler(); };
+  virtual void onFinish() = 0;
+};
+
+// SCENE MANAGER ------- //
+class SceneManager
+{
+public:
+  std::stack<IScene *> sceneStack;
+
+  void loadCurrent() { sceneStack.top()->onLoad(); }
+
+  void updateCurrent(float dt)
+  {
+    if (sceneStack.empty())
+    {
+      return;
+    }
+
+    if (sceneStack.top()->isFinished)
+    {
+      sceneStack.top()->onFinish();
+      sceneStack.pop();
+      return;
+    }
+
+    if (!sceneStack.top()->isLoaded)
+    {
+      sceneStack.top()->onLoad();
+      sceneStack.top()->isLoaded = true;
+      return;
+    }
+
+    sceneStack.top()->onUpdate(dt);
+  }
+};
+
+// INTRO SCENE
+class IntroScene : public IScene
+{
+public:
+  void onLoad() { std::cout << "Intro Scene Loaded" << std::endl; };
+  void onUpdate(float dt) {};
+  void onFinish() { std::cout << "Intro Scene Finished" << std::endl; };
+};
+
+// SCENE_2
+class GameplayScene : public IScene
+{
+public:
+  void onLoad() { std::cout << "Gameplay Scene Loaded" << std::endl; };
+  void onUpdate(float dt) {};
+  void onFinish() { std::cout << "Gameplay Scene Finished" << std::endl; };
+};
+// SCENE_3
+class EndScene : public IScene
+{
+public:
+  void onLoad() { std::cout << "End Scene Loaded" << std::endl; };
+  void onUpdate(float dt) {};
+  void onFinish() { std::cout << "End Scene Finished" << std::endl; };
+};
+
 // GAME ---------- //
 class Game
 {
@@ -130,32 +207,47 @@ public:
   // System
   RenderSystem renderSystem = RenderSystem(transformManager, renderManager);
 
-  // Entities
-  Entity a = entityManager.create();
-  Entity b = entityManager.create();
+  // Scene Manager
+  SceneManager sceneManager;
 
-  // REGISTER
-  void attachManagers()
+  // Scenes
+  IntroScene introScene;
+  GameplayScene gameplayScene;
+  EndScene endSCene;
+
+  void load()
   {
-    transformManager.add(
-        a, TransformComponent{Vector2{0.0f, 0.0f},
-                              Vector2{VIRTUAL_X / 2.0, VIRTUAL_Y / 2.0},
-                              Vector2{10.0f, 10.0f}, 0.0f});
-    transformManager.add(b, TransformComponent{Vector2{0.5f, 0.5f},
-                                               Vector2{0.0, 0.0f},
-                                               Vector2{10.0f, 10.0f}, 0.0f});
-
-    renderManager.add(a, {true, {1.0f, 0.0f, 0.0f, 1.0f}});
-    renderManager.add(b, {true, {0.0f, 1.0f, 0.0f, 1.0f}});
+    sceneManager.sceneStack.push(&endSCene);
+    sceneManager.sceneStack.push(&gameplayScene);
+    sceneManager.sceneStack.push(&introScene);
   }
 
-  void load() { attachManagers(); }
+  // Entities
+  // Entity a = entityManager.create();
+  // Entity b = entityManager.create();
+  //
+  // // REGISTER
+  // void attachManagers()
+  // {
+  //   transformManager.add(
+  //       a, TransformComponent{Vector2{0.0f, 0.0f},
+  //                             Vector2{VIRTUAL_X / 2.0, VIRTUAL_Y / 2.0},
+  //                             Vector2{10.0f, 10.0f}, 0.0f});
+  //   transformManager.add(b, TransformComponent{Vector2{0.5f, 0.5f},
+  //                                              Vector2{0.0, 0.0f},
+  //                                              Vector2{10.0f, 10.0f},
+  //                                              0.0f});
+  //
+  //   renderManager.add(a, {true, {1.0f, 0.0f, 0.0f, 1.0f}});
+  //   renderManager.add(b, {true, {0.0f, 1.0f, 0.0f, 1.0f}});
+  // }
 
   // GAMELOOP UPDATA
   void update(float dt)
   {
-    renderSystem.renderManager.print();
-    renderSystem.draw();
+    sceneManager.updateCurrent(dt);
+    // renderSystem.renderManager.print();
+    // renderSystem.draw();
   };
 };
 
