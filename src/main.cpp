@@ -1,176 +1,21 @@
-#include "list"
+#pragma once
+#include "engine/components/ComponentManager.cpp"
+#include "engine/components/RenderComponent.cpp"
+#include "engine/components/TransformComponent.cpp"
+#include "engine/entity/EntityManager.cpp"
+#include "engine/scene/src/Scene.cpp"
+#include "engine/scene/src/SceneManager.cpp"
+#include "engine/systems/RenderSystem.cpp"
 #include "raylib.h"
-#include "raymath.h"
-#include <cstdint>
 #include <iostream>
 #include <ostream>
-#include <set>
-#include <stack>
-#include <unordered_map>
 
 // DEFINING VIRTUAL RESOLUTION --------- //
 #define VIRTUAL_X 360
 #define VIRTUAL_Y 640
 
-// ENTITY  ---------- //
-using Entity = uint32_t;
-const Entity ENTITY_MAX = 100;
-
-// ENTITY MANAGER ---------- //
-class EntityManager
-{
-public:
-  Entity nextId = 0;
-  std::set<Entity> all;
-
-  Entity create()
-  {
-    Entity id = nextId++;
-    all.insert(id);
-    return id;
-  }
-  void destroy(Entity toDelete) { all.erase(toDelete); }
-
-  void print()
-  {
-    for (auto &e : all)
-    {
-      std::cout << e << std::endl;
-    }
-  }
-};
-
-// TRANSFORM COMPONENT --------- //
-struct TransformComponent
-{
-  Vector2 origin;
-  Vector2 position;
-  Vector2 size;
-  float rotation;
-};
-
-// RENDER COMPONENT ---------- //
-struct RenderComponent
-{
-  bool active;
-  Vector4 color;
-};
-
-// COMPONENT MANAGER ---------- //
-template <typename T> class ComponentManager
-{
-public:
-  std::unordered_map<Entity, T> all;
-
-  void add(Entity e, const T &component) { all.insert({e, component}); }
-  bool has(Entity e) { all.find(e) != all.end(); }
-  void remove(Entity e)
-  {
-    if (!all.find(e))
-    {
-      return;
-    }
-    all.erase(e);
-  }
-
-  T &get(Entity e) { return all.at(e); }
-  std::unordered_map<Entity, T> &getAll() { return all; }
-
-  void print()
-  {
-    for (auto &[e, _] : getAll())
-    {
-      std::cout << e << std::endl;
-    }
-  }
-};
-
-// RENDER SYSTEM ---------- //
-class RenderSystem
-{
-public:
-  RenderSystem(ComponentManager<TransformComponent> &transformManager,
-               ComponentManager<RenderComponent> &renderManager)
-      :
-
-        transformManager(transformManager), renderManager(renderManager)
-  {
-  }
-
-  ComponentManager<TransformComponent> &transformManager;
-  ComponentManager<RenderComponent> &renderManager;
-
-  void draw()
-  {
-    for (auto &[e, d] : renderManager.getAll())
-    {
-      if (d.active)
-      {
-        auto &t = transformManager.get(e);
-        std::cout << t.position.x << std::endl;
-        DrawRectanglePro(
-            Rectangle{t.position.x, t.position.y, t.size.x, t.size.y},
-            Vector2{t.size.x * t.origin.x, t.size.y * t.origin.y}, t.rotation,
-            ColorFromNormalized(d.color));
-      }
-    }
-  }
-};
-
-// SCENE INTERFACE --------- //
-class IScene
-{
-public:
-  bool isLoaded = false;
-  bool isFinished = false;
-
-  void inputHandler()
-  {
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-    {
-      isFinished = true;
-    }
-  }
-  virtual void onLoad() = 0;
-  void onUpdate(float dt) { inputHandler(); };
-  virtual void onFinish() = 0;
-};
-
-// SCENE MANAGER ------- //
-class SceneManager
-{
-public:
-  std::stack<IScene *> sceneStack;
-
-  void loadCurrent() { sceneStack.top()->onLoad(); }
-
-  void updateCurrent(float dt)
-  {
-    if (sceneStack.empty())
-    {
-      return;
-    }
-
-    if (sceneStack.top()->isFinished)
-    {
-      sceneStack.top()->onFinish();
-      sceneStack.pop();
-      return;
-    }
-
-    if (!sceneStack.top()->isLoaded)
-    {
-      sceneStack.top()->onLoad();
-      sceneStack.top()->isLoaded = true;
-      return;
-    }
-
-    sceneStack.top()->onUpdate(dt);
-  }
-};
-
 // INTRO SCENE
-class IntroScene : public IScene
+class IntroScene : public Scene
 {
 public:
   void onLoad() { std::cout << "Intro Scene Loaded" << std::endl; };
@@ -179,7 +24,7 @@ public:
 };
 
 // SCENE_2
-class GameplayScene : public IScene
+class GameplayScene : public Scene
 {
 public:
   void onLoad() { std::cout << "Gameplay Scene Loaded" << std::endl; };
@@ -187,7 +32,7 @@ public:
   void onFinish() { std::cout << "Gameplay Scene Finished" << std::endl; };
 };
 // SCENE_3
-class EndScene : public IScene
+class EndScene : public Scene
 {
 public:
   void onLoad() { std::cout << "End Scene Loaded" << std::endl; };
@@ -217,9 +62,9 @@ public:
 
   void load()
   {
-    sceneManager.sceneStack.push(&endSCene);
-    sceneManager.sceneStack.push(&gameplayScene);
-    sceneManager.sceneStack.push(&introScene);
+    sceneManager.sceneStack.push_back(&endSCene);
+    sceneManager.sceneStack.push_back(&gameplayScene);
+    sceneManager.sceneStack.push_back(&introScene);
   }
 
   // Entities
@@ -245,7 +90,7 @@ public:
   // GAMELOOP UPDATA
   void update(float dt)
   {
-    sceneManager.updateCurrent(dt);
+    sceneManager.update(dt);
     // renderSystem.renderManager.print();
     // renderSystem.draw();
   };
