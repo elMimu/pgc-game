@@ -1,6 +1,5 @@
 #include "engine/core/IGame.hpp"
 #include "raylib.h"
-#include <iostream>
 
 class Engine
 {
