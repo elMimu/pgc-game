@@ -1,10 +1,10 @@
 #pragma once
 
 // FORWARD DECLARATION
-class Game;
+class IGame;
 
 class Engine
 {
 public:
-  virtual void run(Game &game);
+  void run(IGame &game);
 };

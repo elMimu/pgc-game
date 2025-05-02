@@ -1,29 +1,26 @@
+#include "engine/core/Engine.hpp"
 #include "engine/core/IGame.hpp"
 #include "raylib.h"
 
-class Engine
+void Engine::run(IGame &game)
 {
-public:
-  void run(IGame &game)
+  SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+  InitWindow(game.getVirtualX(), game.getVirtualY(), "MULTI MINIGAME SYSTEM");
+
+  SetTargetFPS(60);
+
+  game.load(*this);
+
+  while (!WindowShouldClose())
   {
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
-    InitWindow(game.getVirtualX(), game.getVirtualY(), "MULTI MINIGAME SYSTEM");
+    float time = GetTime();
+    float dt = GetFrameTime();
 
-    SetTargetFPS(60);
+    BeginDrawing();
+    ClearBackground(DARKGRAY);
 
-    game.load(*this);
+    game.update(dt);
 
-    while (!WindowShouldClose())
-    {
-      float time = GetTime();
-      float dt = GetFrameTime();
-
-      BeginDrawing();
-      ClearBackground(DARKGRAY);
-
-      game.update(dt);
-
-      EndDrawing();
-    }
-  };
-};
+    EndDrawing();
+  }
+}
