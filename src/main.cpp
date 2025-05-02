@@ -8,14 +8,20 @@
 // GAME ---------- //
 class MyGame : public AbstractGame
 {
-  public:
+public:
   MyGame() : AbstractGame(VIRTUAL_X, VIRTUAL_Y) {}
   void load(Engine &engine) override
   {
     // PLACE GAME CODE HERE
+    EntityManager::Entity a = engine.entityManager.create();
+    EntityManager::Entity b = engine.entityManager.create();
+    EntityManager::Entity c = engine.entityManager.create();
+
+    engine.entityManager.print();
   }
 
-  void update (float dt) override {
+  void update(float dt) override
+  {
     // PLACE UPDATE SCENE FUNCTIONS HERE
     // TODO - MAYBE AVOID THIS SOMEHOW
   }
@@ -28,5 +34,6 @@ int main(void)
 {
   Engine engine;
   MyGame test;
+  engine.run(test);
   return 0;
 }

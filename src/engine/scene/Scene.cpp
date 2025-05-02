@@ -1,5 +1,3 @@
-#pragma once
-
 #include "engine/scene/IScene.hpp"
 #include "engine/scene/SceneRequest.hpp"
 #include "raylib.h"

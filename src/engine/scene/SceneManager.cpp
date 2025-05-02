@@ -1,4 +1,3 @@
-#pragma once
 #include "Scene.cpp"
 #include "engine/scene/IScene.hpp"
 #include "engine/scene/SceneRequest.hpp"
