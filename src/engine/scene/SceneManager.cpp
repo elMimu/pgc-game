@@ -1,5 +1,5 @@
-#include "Scene.cpp"
-#include "engine/scene/IScene.hpp"
+#include "engine/scene/SceneManager.hpp"
+#include "engine/scene/Scene.hpp"
 #include "engine/scene/SceneRequest.hpp"
 #include <iostream>
 #include <ostream>
@@ -7,117 +7,97 @@
 #include <unordered_map>
 #include <vector>
 
-class SceneManager
+bool SceneManager::currentSceneHasQuery()
 {
-public:
-  // ALL SCENENES MAP;
-  std::unordered_map<std::string, Scene *> sceneMap;
+  return sceneStack.back()->request.type != SceneRequest::RequestType::NONE;
+}
 
-  // SCENE STACK;
-  std::vector<Scene *> sceneStack;
+bool SceneManager::currentSceneIsLoaded()
+{
+  return sceneStack.back()->isLoaded;
+}
 
-  bool currentSceneHasQuery()
+void SceneManager::handleSceneQuery()
+{
+  SceneRequest currentSceneRequest = sceneStack.back()->request;
+
+  switch (currentSceneRequest.type)
   {
-    return sceneStack.back()->request.type != SceneRequest::RequestType::NONE;
+  case SceneRequest::RequestType::REPLACE:
+    sceneStack.pop_back();
+    stackScene(currentSceneRequest.sceneName);
+    break;
+  case SceneRequest::RequestType::STACK:
+    stackScene(currentSceneRequest.sceneName);
+    break;
+    // case SceneRequest::RequestType::POP:
+  default:
+    sceneStack.pop_back();
+    break;
+  };
+}
+
+void SceneManager::update(float dt)
+{
+  if (sceneStack.empty())
+  {
+    return;
   }
 
-  bool currentSceneIsLoaded() { return sceneStack.back()->isLoaded; }
-
-  // HANDLE SCENE QUERY
-  void handleSceneQuery()
+  if (currentSceneHasQuery())
   {
-    SceneRequest currentSceneRequest = sceneStack.back()->request;
-
-    switch (currentSceneRequest.type)
-    {
-    case SceneRequest::RequestType::REPLACE:
-      sceneStack.pop_back();
-      pushScene(currentSceneRequest.sceneName);
-      break;
-    case SceneRequest::RequestType::STACK:
-      pushScene(currentSceneRequest.sceneName);
-      break;
-      // case SceneRequest::RequestType::POP:
-    default:
-      sceneStack.pop_back();
-      break;
-    };
+    handleSceneQuery();
+    return;
   }
 
-  void update(float dt)
+  if (!currentSceneIsLoaded())
   {
-    updateScene(dt);
-    draw();
+    sceneStack.back()->onLoad();
+    sceneStack.back()->isLoaded = true;
+    return;
   }
 
-  void draw() {}
+  sceneStack.back()->onUpdate(dt);
+}
 
-  // UPDATE
-  void updateScene(float dt)
+void SceneManager::replace(std::string sceneName)
+{
+  sceneMap.clear();
+  stackScene(sceneName);
+}
+
+bool SceneManager::hasScene(std::string sceneName)
+{
+  return sceneMap.find(sceneName) != sceneMap.end();
+}
+
+void SceneManager::stackScene(std::string sceneName)
+{
+  Scene *toStack;
+  toStack = getScene(sceneName);
+  if (toStack == nullptr)
   {
-    if (sceneStack.empty())
-    {
-      return;
-    }
+    return;
+  }
+}
 
-    if (currentSceneHasQuery())
-    {
-      handleSceneQuery();
-      return;
-    }
-
-    if (!currentSceneIsLoaded())
-    {
-      sceneStack.back()->onLoad();
-      sceneStack.back()->isLoaded = true;
-      return;
-    }
-
-    sceneStack.back()->onUpdate(dt);
+Scene *SceneManager::getScene(std::string sceneName)
+{
+  if (!hasScene(sceneName))
+  {
+    std::cout << "Scene Doesnt exist" << std::endl;
+    return nullptr;
   }
 
-  // REPLACE SCENE:
-  void replace(std::string sceneName)
-  {
-    sceneMap.clear();
-    pushScene(sceneName);
-  }
+  return sceneMap.at(sceneName);
+}
 
-  // CHECK IF SCENE EXISTS:
-  bool hasScene(std::string sceneName)
-  {
-    return sceneMap.find(sceneName) != sceneMap.end();
-  }
+void SceneManager::addScene(const std::string sceneName, Scene &scene)
+{
+  sceneMap.insert({sceneName, &scene});
+}
 
-  // PUSH SCENE TO STACK
-  void pushScene(std::string sceneName)
-  {
-    IScene *toStack;
-    toStack = getScene(sceneName);
-    if (toStack == nullptr)
-    {
-      return;
-    }
-  }
-
-  // RETRIEVE SCENE FROM MAP
-  IScene *getScene(std::string sceneName)
-  {
-    if (!hasScene(sceneName))
-    {
-      std::cout << "Scene Doesnt exist" << std::endl;
-      return nullptr;
-    }
-
-    return sceneMap.at(sceneName);
-  }
-
-  // ADD SCENE TO GENERAL
-  void addScene(const std::string sceneName, Scene &scene)
-  {
-    sceneMap.insert({sceneName, &scene});
-  }
-
-  // ERASE SCENE FROM GENERAL
-  void eraseScene(const std::string sceneName) { sceneMap.erase(sceneName); }
-};
+void SceneManager::eraseScene(const std::string sceneName)
+{
+  sceneMap.erase(sceneName);
+}
