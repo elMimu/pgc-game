@@ -1,7 +1,7 @@
 #pragma once
 #include "raylib.h"
 
-struct RenderComponent
+struct RenderRectComponent
 {
   bool active;
   Vector4 color;

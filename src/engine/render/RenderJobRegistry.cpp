@@ -1,4 +1,4 @@
-#include "engine/render/RenderRegistry.hpp"
+#include "engine/render/RenderJobRegistry.hpp"
 #include <algorithm>
 
 void RenderJobRegistry::registerJob(RenderJob r)

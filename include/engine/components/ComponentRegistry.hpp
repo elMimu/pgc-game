@@ -31,11 +31,11 @@ public:
 
   template <typename T> void registerEntity(Entity e, const T &component)
   {
-    ComponentManager<T> &manager = getManager<T>();
+    ComponentManager<T> &manager = getOrRegisterManager<T>();
     manager.add(e, component);
   }
 
-  template <typename T> ComponentManager<T> &getManager()
+  template <typename T> ComponentManager<T> &getOrRegisterManager()
   {
 
     std::type_index type = std::type_index(typeid(T));

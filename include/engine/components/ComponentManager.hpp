@@ -13,39 +13,46 @@ public:
   bool has(Entity e);
   T &getEntityComponent(Entity e);
   void printAttachedEntities();
+  std::unordered_map<Entity, T> getManagerMap();
 
 private:
-  std::unordered_map<Entity, T> allManagers;
+  std::unordered_map<Entity, T> managerMap;
 };
+
+template <typename T>
+std::unordered_map<Entity, T> ComponentManager<T>::getManagerMap()
+{
+  return managerMap;
+}
 
 template <typename T>
 void ComponentManager<T>::add(Entity e, const T &component)
 {
   // TODO - HANDLE EXCEPTION - KEY ALREADY EXISTS;
-  allManagers.insert({e, component});
+  managerMap.insert({e, component});
 }
 
 template <typename T> bool ComponentManager<T>::has(Entity e)
 {
-  return allManagers.find(e) != allManagers.end();
+  return managerMap.find(e) != managerMap.end();
 }
 
 template <typename T> void ComponentManager<T>::remove(Entity e)
 {
   // TODO - HANDLE EXCEPTION - NOT FOUND;
-  allManagers.erase(e);
+  managerMap.erase(e);
 }
 
 template <typename T> T &ComponentManager<T>::getEntityComponent(Entity e)
 {
   // TODO - HANDLE EXCEPTION - NOT FOUND;
-  return allManagers.at(e);
+  return managerMap.at(e);
 }
 
 template <typename T> void ComponentManager<T>::printAttachedEntities()
 {
-  for (auto &[e, manager] : allManagers)
+  for (auto &[e, manager] : managerMap)
   {
     std::cout << e << "\n";
-  }
+ }
 }
