@@ -1,3 +1,5 @@
+#include "engine/components/ComponentManager.hpp"
+#include "engine/components/TransformComponent.hpp"
 #include "engine/core/AbstractGame.hpp"
 #include "engine/core/Engine.hpp"
 #include "engine/entity/EntityManager.hpp"
@@ -17,7 +19,26 @@ public:
     Entity b = engine.entityManager.create();
     Entity c = engine.entityManager.create();
 
-    engine.entityManager.print();
+    // CREATE REGISTER
+
+    engine.componentRegistry.registerManager<TransformComponent>();
+    ComponentManager<TransformComponent> &transformManager =
+        engine.componentRegistry.getManager<TransformComponent>();
+
+    transformManager.add(a, {{0.0f, 0.0f},
+                             {VIRTUAL_X / 2.0f, VIRTUAL_Y / 2.0f},
+                             {20.0f, 20.0f},
+                             0});
+    transformManager.add(b, {{0.0f, 0.0f},
+                             {VIRTUAL_X * 0.75f, VIRTUAL_Y * 0.5f},
+                             {20.0f, 20.0f},
+                             0});
+    transformManager.add(c, {{0.0f, 0.0f},
+                             {VIRTUAL_X * 0.25f, VIRTUAL_Y * 0.5f},
+                             {20.0f, 20.0f},
+                             0});
+
+    transformManager.printAttachedEntities();
   }
 
   void update(float dt) override

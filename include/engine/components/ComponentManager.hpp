@@ -1,14 +1,16 @@
 #pragma once
 
-#include "engine/entity/EntityManager.hpp"
+#include "engine/components/IComponentManager.hpp"
+#include "engine/core/Types.hpp"
 #include <iostream>
 #include <unordered_map>
-template <typename T> class ComponentManager
+
+template <typename T> class ComponentManager : public IComponentManager
 {
 public:
   void add(Entity e, const T &component);
+  void remove(Entity e) override;
   bool has(Entity e);
-  void destroy(Entity e);
   T &getEntityComponent(Entity e);
   void printAttachedEntities();
 
@@ -28,7 +30,7 @@ template <typename T> bool ComponentManager<T>::has(Entity e)
   return allManagers.find(e) != allManagers.end();
 }
 
-template <typename T> void ComponentManager<T>::destroy(Entity e)
+template <typename T> void ComponentManager<T>::remove(Entity e)
 {
   // TODO - HANDLE EXCEPTION - NOT FOUND;
   allManagers.erase(e);

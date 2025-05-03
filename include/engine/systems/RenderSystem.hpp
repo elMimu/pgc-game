@@ -1,9 +1,8 @@
-
-
-#include "engine/systems/System.hpp"
-
-class RenderSystem : public System
-{
-  public:
-  RenderSystem(ComponentManager)
-};
+//
+// #include "engine/systems/System.hpp"
+//
+// class RenderSystem : public System
+// {
+//   public:
+//   RenderSystem(ComponentManager)
+// };

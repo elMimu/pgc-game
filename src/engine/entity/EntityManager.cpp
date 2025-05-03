@@ -30,7 +30,7 @@ void EntityManager::destroy(Entity toDelete)
   allEntities.erase(toDelete);
 }
 
-// TODO - SHOULD BE PART OF A DEBUG 
+// TODO - SHOULD BE PART OF A DEBUG
 void EntityManager::print()
 {
   for (auto &e : allEntities)
