@@ -1,12 +1,12 @@
 #pragma once
 
-#include <cstdint>
+#include "engine/core/Types.hpp"
+#include <queue>
 #include <set>
 
 class EntityManager
 {
 public:
-  using Entity = uint32_t;
   static constexpr Entity ENTITY_MAX = 500;
 
   Entity create();
@@ -16,4 +16,5 @@ public:
 private:
   Entity nextId = 0;
   std::set<Entity> allEntities;
+  std::queue<Entity> freeIds;
 };

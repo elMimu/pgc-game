@@ -6,36 +6,35 @@
 template <typename T> class ComponentManager
 {
 public:
-  void add(EntityManager::Entity e, const T &component);
-  bool has(EntityManager::Entity e);
-  void destroy(EntityManager::Entity e);
-  T &getEntityComponent(EntityManager::Entity e);
+  void add(Entity e, const T &component);
+  bool has(Entity e);
+  void destroy(Entity e);
+  T &getEntityComponent(Entity e);
   void printAttachedEntities();
 
 private:
-  std::unordered_map<EntityManager::Entity, T> allManagers;
+  std::unordered_map<Entity, T> allManagers;
 };
 
 template <typename T>
-void ComponentManager<T>::add(EntityManager::Entity e, const T &component)
+void ComponentManager<T>::add(Entity e, const T &component)
 {
   // TODO - HANDLE EXCEPTION - KEY ALREADY EXISTS;
   allManagers.insert({e, component});
 }
 
-template <typename T> bool ComponentManager<T>::has(EntityManager::Entity e)
+template <typename T> bool ComponentManager<T>::has(Entity e)
 {
   return allManagers.find(e) != allManagers.end();
 }
 
-template <typename T> void ComponentManager<T>::destroy(EntityManager::Entity e)
+template <typename T> void ComponentManager<T>::destroy(Entity e)
 {
   // TODO - HANDLE EXCEPTION - NOT FOUND;
   allManagers.erase(e);
 }
 
-template <typename T>
-T &ComponentManager<T>::getEntityComponent(EntityManager::Entity e)
+template <typename T> T &ComponentManager<T>::getEntityComponent(Entity e)
 {
   // TODO - HANDLE EXCEPTION - NOT FOUND;
   return allManagers.at(e);

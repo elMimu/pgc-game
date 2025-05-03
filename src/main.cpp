@@ -13,9 +13,9 @@ public:
   void load(Engine &engine) override
   {
     // PLACE GAME CODE HERE
-    EntityManager::Entity a = engine.entityManager.create();
-    EntityManager::Entity b = engine.entityManager.create();
-    EntityManager::Entity c = engine.entityManager.create();
+    Entity a = engine.entityManager.create();
+    Entity b = engine.entityManager.create();
+    Entity c = engine.entityManager.create();
 
     engine.entityManager.print();
   }
@@ -28,7 +28,7 @@ public:
 };
 
 // GAME STARTING POINT ---------- //
-using Entity = EntityManager::Entity;
+using Entity = Entity;
 
 int main(void)
 {
