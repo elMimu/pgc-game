@@ -2,61 +2,79 @@
 
 #include "engine/components/ComponentManager.hpp"
 #include "engine/components/IComponentManager.hpp"
+#include "engine/core/MapRegistry.hpp"
+#include "engine/core/Types.hpp"
+#include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <typeindex>
+#include <typeinfo>
 #include <unordered_map>
 
 class ComponentRegistry
 {
 public:
-  using ManagerMap =
-      std::unordered_map<std::type_index, std::unique_ptr<IComponentManager>>;
-
-  bool hasManager(std::type_index type)
+  struct ComponentManagerNotFoundException : public std::runtime_error
   {
-    return allManagers.find(type) != allManagers.end();
+    ComponentManagerNotFoundException(const std::string type)
+        : std::runtime_error("Manager for Component type '" + type +
+                             "' not found.") {};
+  };
+
+  template <typename C> ComponentManager<C> &get()
+  {
+    std::type_index type = std::type_index(typeid(C));
+    if (!isRegistered(type))
+    {
+      throw ComponentManagerNotFoundException(typeid(C).name());
+    }
+
+    auto &managerPtrRef = allManagers.at(type);
+
+    return dynamic_cast<ComponentManager<C> &>(*managerPtrRef);
   }
 
-  template <typename T> void registerManager()
+  bool isRegistered(std::type_index type)
   {
-    std::type_index type = std::type_index(typeid(T));
-
-    if (hasManager(type))
+    if (allManagers.find(type) != allManagers.end())
     {
+      return true;
+    }
+    return false;
+  }
+
+  template <typename C> void create()
+  {
+    std::type_index type = std::type_index(typeid(C));
+
+    if (isRegistered(type))
+    {
+      // TODO - HANDLE LOG - MANAGER EXISTS.
+      std::cout << "Manager for Component" << type.name() << "already created."
+                << "\n";
       return;
     }
 
-    allManagers.insert({type, std::make_unique<ComponentManager<T>>()});
+    auto itemPtr = std::make_unique<ComponentManager<C>>();
+    ComponentManager<C> &itemRef = *itemPtr;
+    allManagers[type] = std::move(itemPtr);
   }
 
-  template <typename T> void registerEntity(Entity e, const T &component)
+  template <typename T> void dettachComponent(Entity e)
   {
-    ComponentManager<T> &manager = getOrRegisterManager<T>();
-    manager.add(e, component);
+    ComponentManager<T> manager = get<T>();
+    manager.remove(e);
   }
 
-  template <typename T> ComponentManager<T> &getOrRegisterManager()
+  void dettachFromAllManagers(Entity e)
   {
-
-    std::type_index type = std::type_index(typeid(T));
-
-    if (!hasManager(type))
+    for (auto &[e, _] : allManagers)
     {
-      // TODO - HANDLE DOESN'T EXIST EXCEPTION
-      registerManager<T>();
+      allManagers.erase(e);
     }
-
-    return *static_cast<ComponentManager<T> *>(allManagers.at(type).get());
-  }
-
-  void removeAllManagers(Entity e)
-  {
-    for (auto &[t, pt] : allManagers)
-    {
-      pt->remove(e);
-    }
-  }
+  };
 
 private:
-  ManagerMap allManagers;
+  std::unordered_map<std::type_index, std::unique_ptr<IComponentManager>>
+      allManagers;
 };

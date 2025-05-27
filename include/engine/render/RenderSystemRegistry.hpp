@@ -1,23 +1,28 @@
 #pragma once
 
-#include "engine/components/ComponentRegistry.hpp"
+#include "engine/render/IRenderSystem.hpp"
+#include "engine/render/RenderJobRegistry.hpp"
 #include "engine/render/RenderSystem.hpp"
-#include <memory>
 #include <vector>
 
 class RenderSystemRegistry
 {
 public:
-  template <typename T, typename... Args>
-  void registerRenderSystem(Args &&...args)
+  template <typename C, typename... Cs>
+  void registerSystem(RenderSystem<C, Cs...> &system)
   {
-    static_assert(std::is_base_of<RenderSystem, T>::value);
-    allRenderSystems.push_back(
-        std::make_unique<T>(std::forward<Args>(args)...));
+    allRenderSystems.push_back(&system);
   }
 
-  void registerAllComponentsJobs(ComponentRegistry &component);
+  void registerAllComponentsJobs(RenderJobRegistry &jobRegistry, World &world)
+  {
+
+    for (auto &render : allRenderSystems)
+    {
+      render->registerJobs(jobRegistry, world);
+    }
+  };
 
 private:
-  std::vector<std::unique_ptr<RenderSystem>> allRenderSystems;
+  std::vector<IRenderSystem *> allRenderSystems;
 };

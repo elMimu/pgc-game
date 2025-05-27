@@ -1,22 +1,33 @@
+#pragma once
+
+#include "engine/core/MapRegistry.hpp"
 #include "engine/scene/Scene.hpp"
-#include <string>
-#include <unordered_map>
+#include "engine/scene/SceneRequest.hpp"
+#include <memory>
+#include <utility>
 #include <vector>
 
 class SceneManager
 {
-private:
-  std::unordered_map<std::string, Scene *> sceneMap;
-  std::vector<Scene *> sceneStack;
+public:
+  void update(const World &world, float dt);
 
-  void update(float dt);
+  template <typename T> void pushScene(const World &world)
+  {
+    sceneStack.push_back(std::move(createScene<T>(world)));
+  };
+
+private:
+  std::vector<std::unique_ptr<Scene>> sceneStack;
+
   bool currentSceneHasQuery();
   bool currentSceneIsLoaded();
-  void handleSceneQuery();
-  bool hasScene(std::string sceneName);
-  void stackScene(std::string sceneName);
-  Scene *getScene(std::string sceneName);
-  void addScene(const std::string sceneName, Scene &scene);
-  void eraseScene(const std::string sceneName);
-  void replace(std::string sceneName);
+  void handleSceneRequest(const World &world);
+
+  template <typename T> std::unique_ptr<Scene> createScene(const World &world)
+  {
+    static_assert(std::is_base_of<Scene, T>::value,
+                  "T must be derived from Scene");
+    return std::make_unique<T>(world);
+  }
 };

@@ -1,15 +1,9 @@
 #include "engine/scene/SceneManager.hpp"
-#include "engine/scene/Scene.hpp"
 #include "engine/scene/SceneRequest.hpp"
-#include <iostream>
-#include <ostream>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 bool SceneManager::currentSceneHasQuery()
 {
-  return sceneStack.back()->request.type != SceneRequest::RequestType::NONE;
+  return sceneStack.back()->request.action != SceneRequest::Action::NONE;
 }
 
 bool SceneManager::currentSceneIsLoaded()
@@ -17,27 +11,65 @@ bool SceneManager::currentSceneIsLoaded()
   return sceneStack.back()->isLoaded;
 }
 
-void SceneManager::handleSceneQuery()
+void SceneManager::handleSceneRequest(const World &world)
 {
-  SceneRequest currentSceneRequest = sceneStack.back()->request;
+  SceneRequest &currentSceneRequest = sceneStack.back()->request;
 
-  switch (currentSceneRequest.type)
+  switch (currentSceneRequest.action)
   {
-  case SceneRequest::RequestType::REPLACE:
-    sceneStack.pop_back();
-    stackScene(currentSceneRequest.sceneName);
+  case SceneRequest::Action::PUSH:
+    if (currentSceneRequest.factory)
+    {
+      sceneStack.push_back(currentSceneRequest.factory(world));
+    }
     break;
-  case SceneRequest::RequestType::STACK:
-    stackScene(currentSceneRequest.sceneName);
+
+  case SceneRequest::Action::POP:
+    if (!sceneStack.empty())
+    {
+      sceneStack.pop_back();
+    }
     break;
-    // case SceneRequest::RequestType::POP:
+
+  case SceneRequest::Action::RELOAD:
+    if (!sceneStack.empty())
+    {
+      sceneStack.back()->onReload();
+    }
+    break;
+
+  case SceneRequest::Action::REPLACE:
+    if (!sceneStack.empty())
+    {
+      sceneStack.pop_back();
+      if (currentSceneRequest.factory)
+      {
+        sceneStack.push_back(currentSceneRequest.factory(world));
+      }
+    }
+    break;
+
+  case SceneRequest::Action::CLEAR:
+    sceneStack.clear();
+    if (currentSceneRequest.factory)
+    {
+      sceneStack.push_back(currentSceneRequest.factory(world));
+    }
+    break;
+
+  case SceneRequest::Action::NONE:
+    return;
+
   default:
-    sceneStack.pop_back();
     break;
-  };
+  }
+
+  // Clear request after handling
+  currentSceneRequest.action = SceneRequest::Action::NONE;
+  currentSceneRequest.factory = nullptr;
 }
 
-void SceneManager::update(float dt)
+void SceneManager::update(const World &world, float dt)
 {
   if (sceneStack.empty())
   {
@@ -46,7 +78,7 @@ void SceneManager::update(float dt)
 
   if (currentSceneHasQuery())
   {
-    handleSceneQuery();
+    handleSceneRequest(world);
     return;
   }
 
@@ -58,46 +90,4 @@ void SceneManager::update(float dt)
   }
 
   sceneStack.back()->onUpdate(dt);
-}
-
-void SceneManager::replace(std::string sceneName)
-{
-  sceneMap.clear();
-  stackScene(sceneName);
-}
-
-bool SceneManager::hasScene(std::string sceneName)
-{
-  return sceneMap.find(sceneName) != sceneMap.end();
-}
-
-void SceneManager::stackScene(std::string sceneName)
-{
-  Scene *toStack;
-  toStack = getScene(sceneName);
-  if (toStack == nullptr)
-  {
-    return;
-  }
-}
-
-Scene *SceneManager::getScene(std::string sceneName)
-{
-  if (!hasScene(sceneName))
-  {
-    std::cout << "Scene Doesnt exist" << std::endl;
-    return nullptr;
-  }
-
-  return sceneMap.at(sceneName);
-}
-
-void SceneManager::addScene(const std::string sceneName, Scene &scene)
-{
-  sceneMap.insert({sceneName, &scene});
-}
-
-void SceneManager::eraseScene(const std::string sceneName)
-{
-  sceneMap.erase(sceneName);
 }

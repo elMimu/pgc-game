@@ -14,7 +14,7 @@ public:
   void print();
 
 private:
-  Entity nextId = 0;
+  Entity nextId = 1;
   std::set<Entity> allEntities;
   std::queue<Entity> freeIds;
 };

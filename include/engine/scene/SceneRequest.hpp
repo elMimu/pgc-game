@@ -1,16 +1,21 @@
 #pragma once
 
-#include <string>
+#include "engine/core/World.hpp"
+#include <functional>
+#include <memory>
+class Scene;
 
 struct SceneRequest
 {
-  enum class RequestType
+  enum class Action
   {
-    REPLACE,
-    STACK,
+    CLEAR,
+    PUSH,
     POP,
-    NONE
+    RELOAD,
+    REPLACE,
+    NONE,
   };
-  RequestType type = RequestType::NONE;
-  std::string sceneName = "";
+  Action action = Action::NONE;
+  std::function<std::unique_ptr<Scene>(const World &)> factory = nullptr;
 };

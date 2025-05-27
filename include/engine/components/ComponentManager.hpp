@@ -8,25 +8,27 @@
 template <typename T> class ComponentManager : public IComponentManager
 {
 public:
-  void add(Entity e, const T &component);
+  void attach(Entity e, const T &component);
+  T &getComponent(Entity e);
   void remove(Entity e) override;
-  bool has(Entity e);
-  T &getEntityComponent(Entity e);
+  bool has(Entity e) override;
+  int size() override;
   void printAttachedEntities();
-  std::unordered_map<Entity, T> getManagerMap();
+
+  std::unordered_map<Entity, T> &getAll();
 
 private:
   std::unordered_map<Entity, T> managerMap;
 };
 
 template <typename T>
-std::unordered_map<Entity, T> ComponentManager<T>::getManagerMap()
+std::unordered_map<Entity, T> &ComponentManager<T>::getAll()
 {
   return managerMap;
 }
 
 template <typename T>
-void ComponentManager<T>::add(Entity e, const T &component)
+void ComponentManager<T>::attach(Entity e, const T &component)
 {
   // TODO - HANDLE EXCEPTION - KEY ALREADY EXISTS;
   managerMap.insert({e, component});
@@ -43,7 +45,7 @@ template <typename T> void ComponentManager<T>::remove(Entity e)
   managerMap.erase(e);
 }
 
-template <typename T> T &ComponentManager<T>::getEntityComponent(Entity e)
+template <typename T> T &ComponentManager<T>::getComponent(Entity e)
 {
   // TODO - HANDLE EXCEPTION - NOT FOUND;
   return managerMap.at(e);
@@ -54,5 +56,10 @@ template <typename T> void ComponentManager<T>::printAttachedEntities()
   for (auto &[e, manager] : managerMap)
   {
     std::cout << e << "\n";
- }
+  }
+}
+
+template <typename T> int ComponentManager<T>::size()
+{
+  return managerMap.size();
 }

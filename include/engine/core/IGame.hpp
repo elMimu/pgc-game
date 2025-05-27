@@ -1,6 +1,5 @@
 #pragma once
 
-// FORWARD DECLARATION
 class Engine;
 
 class IGame

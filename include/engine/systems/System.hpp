@@ -1,8 +1,21 @@
 #pragma once
 
-class System
+#include "engine/systems/ISystem.hpp"
+
+template <typename... Cs> class System : public ISystem
 {
 public:
-    ~System() = default;
-  virtual void update(float dt) = 0;
+  virtual ~System() = default;
+  void update(World &world, float dt) override
+  {
+    auto view = world.view<Cs...>();
+    for (auto &&tuple : view)
+    {
+      std::apply([&](Entity e, Cs &...components)
+                 { updateEntity(world, e, dt, components...); }, tuple);
+    }
+  };
+
+protected:
+  virtual void updateEntity(World &world, Entity e, float dt, Cs &...) = 0;
 };

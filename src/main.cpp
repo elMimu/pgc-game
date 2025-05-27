@@ -1,8 +1,9 @@
-#include "engine/components/ComponentManager.hpp"
-#include "engine/components/TransformComponent.hpp"
+#include "engine/components/GlobalTransformable.hpp"
+#include "engine/components/RenderRectangle.hpp"
+#include "engine/components/Transformable.hpp"
 #include "engine/core/AbstractGame.hpp"
 #include "engine/core/Engine.hpp"
-#include "engine/entity/EntityManager.hpp"
+#include "raylib.h"
 
 #define VIRTUAL_X 360
 #define VIRTUAL_Y 640
@@ -11,41 +12,44 @@
 class MyGame : public AbstractGame
 {
 public:
+  float time = 0;
   MyGame() : AbstractGame(VIRTUAL_X, VIRTUAL_Y) {}
   void load(Engine &engine) override
   {
-    // PLACE GAME CODE HERE
-    Entity a = engine.entityManager.create();
-    Entity b = engine.entityManager.create();
-    Entity c = engine.entityManager.create();
+    // Create simple entities
+    Entity redSquare = engine.world.entityManager.create();
+    Entity blueSquare = engine.world.entityManager.create();
 
-    // CREATE REGISTER
+    // attach components to entities
+    // Transformable
+    std::cout << "abc " << getVirtualY() << "\n";
+    engine.world.attach<Transformable>(
+        redSquare, Transformable({0.5f, 0.5f},
+                                 {0.75f * getVirtualX(), 0.75f * getVirtualY()},
+                                 {
+                                     0.25f * getVirtualX(),
+                                     0.25f * getVirtualX(),
+                                 },
+                                 30 * DEG2RAD));
 
-    engine.componentRegistry.registerManager<TransformComponent>();
-    ComponentManager<TransformComponent> &transformManager =
-        engine.componentRegistry.getManager<TransformComponent>();
+    engine.world.attach<Transformable>(blueSquare,
+                                       Transformable({0.5f, 0.5f}, {1.0f, 1.0f},
+                                                     {
+                                                         0.5f,
+                                                         0.5f,
+                                                     },
+                                                     0.0f, redSquare));
 
-    transformManager.add(a, {{0.0f, 0.0f},
-                             {VIRTUAL_X / 2.0f, VIRTUAL_Y / 2.0f},
-                             {20.0f, 20.0f},
-                             0});
-    transformManager.add(b, {{0.0f, 0.0f},
-                             {VIRTUAL_X * 0.75f, VIRTUAL_Y * 0.5f},
-                             {20.0f, 20.0f},
-                             0});
-    transformManager.add(c, {{0.0f, 0.0f},
-                             {VIRTUAL_X * 0.25f, VIRTUAL_Y * 0.5f},
-                             {20.0f, 20.0f},
-                             0});
+    engine.world.attach<GlobalTransformable>(blueSquare, {});
+    engine.world.attach<GlobalTransformable>(redSquare, {});
 
-    transformManager.printAttachedEntities();
+    // RectRender
+    // FIX -- inverted order of parenting
+    engine.world.attach<RenderRectangle>(blueSquare, {0, BLUE});
+    engine.world.attach<RenderRectangle>(redSquare, {0, RED});
   }
 
-  void update(float dt) override
-  {
-    // PLACE UPDATE SCENE FUNCTIONS HERE
-    // TODO - MAYBE AVOID THIS SOMEHOW
-  }
+  void update(float dt) override {}
 };
 
 // GAME STARTING POINT ---------- //

@@ -5,6 +5,6 @@
 
 struct RenderJob
 {
-  std::uint32_t layer;
-  std::function<void()> drawFn;
+  std::uint32_t priority;
+  std::function<void()> draw;
 };
