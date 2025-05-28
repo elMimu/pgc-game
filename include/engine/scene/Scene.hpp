@@ -5,15 +5,18 @@
 class Scene
 {
 public:
-  Scene(const World &world) : world(world) {};
+  Scene(World &world) : world(world) {};
   virtual ~Scene() = default;
-  virtual void inputHandler();
+
+  virtual void inputHandler() = 0; 
   virtual void onReload() {};
   virtual void onLoad() {};
   virtual void onUpdate(float dt) {};
   virtual void onFinish() {};
+
   bool isLoaded = false;
   bool isFinished = false;
-  const World &world;
+  World &world;
   SceneRequest request;
 };
+

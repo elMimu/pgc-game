@@ -10,9 +10,9 @@
 class SceneManager
 {
 public:
-  void update(const World &world, float dt);
+  void update(World &world, float dt);
 
-  template <typename T> void pushScene(const World &world)
+  template <typename T> void pushScene(World &world)
   {
     sceneStack.push_back(std::move(createScene<T>(world)));
   };
@@ -22,9 +22,9 @@ private:
 
   bool currentSceneHasQuery();
   bool currentSceneIsLoaded();
-  void handleSceneRequest(const World &world);
+  void handleSceneRequest(World &world);
 
-  template <typename T> std::unique_ptr<Scene> createScene(const World &world)
+  template <typename T> std::unique_ptr<Scene> createScene(World &world)
   {
     static_assert(std::is_base_of<Scene, T>::value,
                   "T must be derived from Scene");

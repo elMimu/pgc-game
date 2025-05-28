@@ -21,7 +21,6 @@ Entity EntityManager::create()
   }
 
   allEntities.insert(newId);
-  std::cout << newId << " ";
   return newId;
 };
 

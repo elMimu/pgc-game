@@ -11,7 +11,7 @@ bool SceneManager::currentSceneIsLoaded()
   return sceneStack.back()->isLoaded;
 }
 
-void SceneManager::handleSceneRequest(const World &world)
+void SceneManager::handleSceneRequest(World &world)
 {
   SceneRequest &currentSceneRequest = sceneStack.back()->request;
 
@@ -69,7 +69,7 @@ void SceneManager::handleSceneRequest(const World &world)
   currentSceneRequest.factory = nullptr;
 }
 
-void SceneManager::update(const World &world, float dt)
+void SceneManager::update(World &world, float dt)
 {
   if (sceneStack.empty())
   {

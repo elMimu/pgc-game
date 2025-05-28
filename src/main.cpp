@@ -3,6 +3,7 @@
 #include "engine/components/Transformable.hpp"
 #include "engine/core/AbstractGame.hpp"
 #include "engine/core/Engine.hpp"
+#include "games/BoxSelection/core/Game.hpp"
 #include "raylib.h"
 
 #define VIRTUAL_X 360
@@ -48,8 +49,6 @@ public:
     engine.world.attach<RenderRectangle>(blueSquare, {0, BLUE});
     engine.world.attach<RenderRectangle>(redSquare, {0, RED});
   }
-
-  void update(float dt) override {}
 };
 
 // GAME STARTING POINT ---------- //
@@ -58,7 +57,7 @@ using Entity = Entity;
 int main(void)
 {
   Engine engine;
-  MyGame test;
+  Game test;
   engine.run(test);
   return 0;
 }
