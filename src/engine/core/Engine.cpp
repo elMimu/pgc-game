@@ -4,6 +4,7 @@
 #include "engine/components/Transformable.hpp"
 #include "engine/core/IGame.hpp"
 #include "engine/render/RenderRectSystem.hpp"
+#include "engine/render/RenderTextSystem.hpp"
 #include "engine/systems/GlobalTransformSystem.hpp"
 #include "raylib.h"
 #include "rlgl.h"
@@ -20,6 +21,7 @@ void Engine::createDefaultComponentManagers()
   world.componentRegistry.create<Transformable>();
   world.componentRegistry.create<GlobalTransformable>();
   world.componentRegistry.create<RenderRectangle>();
+  world.componentRegistry.create<RenderText>();
 }
 
 void Engine::createDefaultSystems()
@@ -30,6 +32,7 @@ void Engine::createDefaultSystems()
 void Engine::registerDefaultRenderSystems()
 {
   renderSystemRegistry.registerRender<RenderRectSystem>();
+  renderSystemRegistry.registerRender<RenderTextSystem>();
 }
 
 void Engine::run(IGame &game)

@@ -4,12 +4,14 @@
 #include "engine/components/RenderRectangle.hpp"
 #include "engine/components/Transformable.hpp"
 #include "engine/core/Types.hpp"
+#include "engine/render/RenderTextSystem.hpp"
 #include "engine/utils/TransformUtils.hpp"
 #include "raylib.h"
 #include <vector>
 
 void GameplayScene::onLoad()
 {
+  createTitle();
   constructBoxes();
 }
 
@@ -33,10 +35,22 @@ void GameplayScene::constructBoxes()
       rightBox,
       Transformable({0.5f, 0.5f}, {0.75f * screenX, 0.6f * screenY},
                     {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f));
-  world.attach<RenderRectangle>(rightBox, RenderRectangle({0, BLUE}));
   world.attach<GlobalTransformable>(rightBox, {});
+  world.attach<RenderRectangle>(rightBox, RenderRectangle({0, BLUE}));
 
   rightBoxItems = buildBoxItems(10, rightBox);
+}
+
+void GameplayScene::createTitle()
+{
+  Entity titleText = world.entityManager.create();
+  world.attach<Transformable>(
+      titleText, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.1f * screenY},
+                               {0.5f * screenX, 0.2f * screenY}, 0.0f));
+  world.attach<GlobalTransformable>(titleText, {});
+  world.attach<RenderText>(
+      titleText,
+      RenderText("Clique na caixa com mais items", 8, 1.0f, WHITE, 5, 0));
 }
 
 std::vector<Entity> GameplayScene::buildBoxItems(int items, Entity parent)
@@ -60,9 +74,9 @@ Entity GameplayScene::createBoxItem(Vector2 position, Entity parent,
 
   Entity newEntity = world.entityManager.create();
 
-  world.attach<Transformable>(newEntity, Transformable({0.5f, 0.5f}, position,
-                                                       {0.95f * w, 0.95f * w * aspect},
-                                                       0.0f, parent));
+  world.attach<Transformable>(
+      newEntity, Transformable({0.5f, 0.5f}, position,
+                               {0.95f * w, 0.95f * w * aspect}, 0.0f, parent));
 
   world.attach<RenderRectangle>(newEntity, RenderRectangle({1, MAGENTA}));
 
