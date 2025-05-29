@@ -7,6 +7,5 @@ class IRenderSystem
 {
 public:
   virtual ~IRenderSystem() = default;
-  virtual void registerJobs(RenderJobRegistry &jobRegistry,
-                                     World &world) = 0;
+  virtual void registerJobs(RenderJobRegistry &jobRegistry, World &world) = 0;
 };

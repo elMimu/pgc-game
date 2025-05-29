@@ -29,7 +29,7 @@ void Engine::createDefaultSystems()
 
 void Engine::registerDefaultRenderSystems()
 {
-  renderSystemRegistry.registerSystem(RenderRectSystem());
+  renderSystemRegistry.registerRender<RenderRectSystem>();
 }
 
 void Engine::run(IGame &game)
