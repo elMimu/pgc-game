@@ -26,7 +26,7 @@ public:
   void onLoad();
 
   std::vector<Entity> buildBoxItems(int items, Entity parent);
-  Entity createBoxItem(Vector2 position, Entity parent);
+  Entity createBoxItem(Vector2 position, Entity parent, float aspect);
 
   std::vector<Vector2> mapItemsPosition(int items);
   std::vector<Vector2> mapEvenItemsPosition(int items);

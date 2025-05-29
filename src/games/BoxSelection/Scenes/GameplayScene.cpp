@@ -4,6 +4,7 @@
 #include "engine/components/RenderRectangle.hpp"
 #include "engine/components/Transformable.hpp"
 #include "engine/core/Types.hpp"
+#include "engine/utils/TransformUtils.hpp"
 #include "raylib.h"
 #include <vector>
 
@@ -17,35 +18,25 @@ void GameplayScene::constructBoxes()
   // left box
   leftBox = world.entityManager.create();
   rightBox = world.entityManager.create();
-  // Entity greenBox = world.entityManager.create();
 
   // attach components
-
-  leftBoxItems = buildBoxItems(9, leftBox);
   world.attach<Transformable>(
       leftBox,
-      Transformable({0.5f, 0.5f}, {0.25f * screenX, 0.5f * screenY},
-                    {0.5f * screenX - widthPadding, 0.8f * screenY}, 0.0f));
+      Transformable({0.5f, 0.5f}, {0.25f * screenX, 0.6f * screenY},
+                    {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f));
   world.attach<RenderRectangle>(leftBox, RenderRectangle({0, BLUE}));
   world.attach<GlobalTransformable>(leftBox, {});
 
-  rightBoxItems = buildBoxItems(10, rightBox);
-  // world.attach<Transformable>(
-  //     greenBox,
-  //     Transformable({0.5f, 0.5f}, {0.5f, 0.5f}, {0.5f, 0.5f}, 0.0f,
-  //     rightBox));
-  // world.attach<RenderRectangle>(greenBox, RenderRectangle({0, GREEN}));
-  // world.attach<GlobalTransformable>(greenBox, {});
+  leftBoxItems = buildBoxItems(9, leftBox);
 
   world.attach<Transformable>(
       rightBox,
-      Transformable({0.5f, 0.5f}, {0.75f * screenX, 0.5f * screenY},
-                    {0.5f * screenX - widthPadding, 0.8f * screenY}, 0.0f));
+      Transformable({0.5f, 0.5f}, {0.75f * screenX, 0.6f * screenY},
+                    {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f));
   world.attach<RenderRectangle>(rightBox, RenderRectangle({0, BLUE}));
   world.attach<GlobalTransformable>(rightBox, {});
-  //
-  //
-  //
+
+  rightBoxItems = buildBoxItems(10, rightBox);
 }
 
 std::vector<Entity> GameplayScene::buildBoxItems(int items, Entity parent)
@@ -53,21 +44,24 @@ std::vector<Entity> GameplayScene::buildBoxItems(int items, Entity parent)
   std::vector<Vector2> positions = mapItemsPosition(items);
   std::vector<Entity> entities;
 
+  float aspect = TransformUtils::getAspect(parent, world);
+
   for (auto pos : positions)
   {
-    entities.push_back(createBoxItem(pos, parent));
+    entities.push_back(createBoxItem(pos, parent, aspect));
   }
 
   return entities;
 }
 
-Entity GameplayScene::createBoxItem(Vector2 position, Entity parent)
+Entity GameplayScene::createBoxItem(Vector2 position, Entity parent,
+                                    float aspect)
 {
 
   Entity newEntity = world.entityManager.create();
 
   world.attach<Transformable>(newEntity, Transformable({0.5f, 0.5f}, position,
-                                                       {0.95f * w, 0.95f * h},
+                                                       {0.95f * w, 0.95f * w * aspect},
                                                        0.0f, parent));
 
   world.attach<RenderRectangle>(newEntity, RenderRectangle({1, MAGENTA}));

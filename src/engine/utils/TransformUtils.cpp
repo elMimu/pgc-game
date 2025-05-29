@@ -4,6 +4,26 @@
 
 namespace TransformUtils
 {
+
+float getAspect(Entity e, World &w)
+{
+  float aspect = 1.0f;
+  Entity current = e;
+
+  while (true)
+  {
+    auto &t = w.get<Transformable>(current);
+    aspect *= t.size.x / t.size.y;
+
+    if (t.parent == 0)
+      break;
+
+    current = t.parent;
+  }
+
+  return aspect;
+}
+
 Matrix getLocalMatrix(const Transformable &t)
 {
   Matrix anchor = MatrixTranslate(-t.origin.x, -t.origin.y, 0.0f);
