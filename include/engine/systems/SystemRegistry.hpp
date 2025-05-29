@@ -4,8 +4,6 @@
 
 class SystemRegistry
 {
-  std::vector<std::unique_ptr<ISystem>> systems;
-
 public:
   template <typename T> void registerSystem()
   {
@@ -21,6 +19,7 @@ public:
   }
 
 private:
+  std::vector<std::unique_ptr<ISystem>> systems;
   template <typename T> std::unique_ptr<T> createSystem()
   {
     static_assert(std::is_base_of<ISystem, T>::value,
