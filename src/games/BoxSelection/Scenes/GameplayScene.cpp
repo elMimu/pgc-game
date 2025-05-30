@@ -45,12 +45,13 @@ void GameplayScene::createTitle()
 {
   Entity titleText = world.entityManager.create();
   world.attach<Transformable>(
-      titleText, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.1f * screenY},
-                               {0.5f * screenX, 0.2f * screenY}, 0.0f));
+      titleText, Transformable({0.5f, 0.5f}, {0.468f * screenX, 0.1f * screenY},
+                               {1.0f * screenX, 1.0f}, 0.0f, 0));
   world.attach<GlobalTransformable>(titleText, {});
-  world.attach<RenderText>(
-      titleText,
-      RenderText("Clique na caixa com mais items", 8, 1.0f, WHITE, 5, 0));
+  // world.attach<RenderRectangle>(titleText, RenderRectangle({5, GREEN}));
+  world.attach<RenderText>(titleText,
+                           RenderText("Clique na caixa com mais items",
+                                      GetFontDefault(), 1, 1.0f, WHITE, 5, 0));
 }
 
 std::vector<Entity> GameplayScene::buildBoxItems(int items, Entity parent)

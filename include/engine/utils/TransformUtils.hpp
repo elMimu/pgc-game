@@ -12,6 +12,9 @@ struct WorldMatrixResult
 };
 Matrix getLocalMatrix(const Transformable &t);
 float getAspect(Entity e, World &w);
+float getRotationFromMatrix(const Matrix &m);
+float getDegRotationFromMatrix(const Matrix &m);
+Vector2 getScaleFromMatrix(const Matrix &m);
 WorldMatrixResult getSafeWorldMatrix(World &w, Entity e, Transformable &t);
 Matrix &getWorldMatrix(World &w, Entity e, Transformable &t);
 } // namespace TransformUtils

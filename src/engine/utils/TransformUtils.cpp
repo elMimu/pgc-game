@@ -1,5 +1,6 @@
 #include "engine/utils/TransformUtils.hpp"
 #include "engine/components/GlobalTransformable.hpp"
+#include "raylib.h"
 #include "raymath.h"
 
 namespace TransformUtils
@@ -36,6 +37,23 @@ Matrix getLocalMatrix(const Transformable &t)
   model = MatrixMultiply(model, translation);
   return model;
 };
+
+float getRotationFromMatrix(const Matrix &m)
+{
+  return atan2f(m.m1, m.m0);
+}
+
+float getDegRotationFromMatrix(const Matrix &m)
+{
+  return getRotationFromMatrix(m) * RAD2DEG;
+}
+
+Vector2 getScaleFromMatrix(const Matrix &m)
+{
+  float scaleX = sqrtf(m.m0 * m.m0 + m.m1 * m.m1);
+  float scaleY = sqrtf(m.m4 * m.m4 + m.m5 * m.m5);
+  return {scaleX, scaleY};
+}
 
 WorldMatrixResult getSafeWorldMatrix(World &w, Entity e, Transformable &t)
 {
