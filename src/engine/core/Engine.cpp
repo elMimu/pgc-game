@@ -29,6 +29,12 @@ void Engine::createDefaultSystems()
   systemRegistry.registerSystem<GlobalTransformSystem>();
 }
 
+void Engine::loadDefaultFonts()
+{
+  world.fontLoader.loadFontEx("chewy",
+                              RESOURCES_PATH "fonts/Chewy-Regular.ttf");
+}
+
 void Engine::registerDefaultRenderSystems()
 {
   renderSystemRegistry.registerRender<RenderRectSystem>();
@@ -39,6 +45,8 @@ void Engine::run(IGame &game)
 {
   SetConfigFlags(FLAG_WINDOW_RESIZABLE);
   InitWindow(game.getVirtualX(), game.getVirtualY(), "MULTI MINIGAME SYSTEM");
+
+  loadDefaultFonts();
 
   SetTargetFPS(60);
 

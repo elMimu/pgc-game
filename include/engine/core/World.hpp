@@ -1,10 +1,10 @@
 #pragma once
 
-#include "engine/components/ComponentManager.hpp"
 #include "engine/components/ComponentRegistry.hpp"
 #include "engine/components/View.hpp"
 #include "engine/core/Types.hpp"
 #include "engine/entity/EntityManager.hpp"
+#include "engine/utils/FontLoader.hpp"
 #include <tuple>
 
 class World
@@ -12,6 +12,7 @@ class World
 public:
   EntityManager entityManager;
   ComponentRegistry componentRegistry;
+  FontLoader fontLoader;
 
   void destroyEntity(Entity e)
   {

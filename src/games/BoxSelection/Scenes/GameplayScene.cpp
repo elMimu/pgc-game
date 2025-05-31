@@ -51,7 +51,8 @@ void GameplayScene::createTitle()
   // world.attach<RenderRectangle>(titleText, RenderRectangle({5, GREEN}));
   world.attach<RenderText>(titleText,
                            RenderText("Clique na caixa com mais items",
-                                      GetFontDefault(), 1, 1.0f, WHITE, 5, 0));
+                                      world.fontLoader.get("chewy"), 1, 1.0f,
+                                      WHITE, 5, 0));
 }
 
 std::vector<Entity> GameplayScene::buildBoxItems(int items, Entity parent)

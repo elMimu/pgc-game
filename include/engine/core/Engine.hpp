@@ -20,6 +20,7 @@ public:
 
   Engine() { loadDefaults(); }
   void loadDefaults();
+  void loadDefaultFonts();
   void createDefaultComponentManagers();
   void createDefaultSystems();
   void registerDefaultRenderSystems();
