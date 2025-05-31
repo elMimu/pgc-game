@@ -32,25 +32,24 @@ public:
     loaded.clear();
   };
 
-  void getBaseTextWidth(std::string text, Font font, float testFontSize)
+  static float getBaseTextWidth(const std::string &text, Font font)
   {
-    float textAdvance = 0.0f;
-    // if (!font.glyphs || font.glyphCount <= 0)
-    // {
-    //   TraceLog(LOG_ERROR, "Font not valid for glyph indexing.");
-    //   return;
-    // }
+    if (!font.glyphs || font.glyphCount <= 0)
+    {
+      TraceLog(LOG_ERROR, "Font not valid for glyph indexing.");
+      return 0.0f;
+    }
+
+    float totalAdvance = 0.0f;
     for (char c : text)
     {
-
-      // int index = GetGlyphIndex(font, c);
-      // std:: cout << index << " " ;
-      // GlyphInfo glyph = font.glyphs[index];
-      // textAdvance += glyph.advanceX;
+      int index = GetGlyphIndex(font, c);
+      GlyphInfo glyph = (index >= 0 && index < font.glyphCount)
+                            ? font.glyphs[index]
+                            : font.glyphs[0];
+      totalAdvance += glyph.advanceX;
     }
-    // std::cout << "########" << "\n";
-    // std::cout << textAdvance << " - " << font.baseSize << "\n";
-    // float baseWidth = textAdvance * (testFontSize / font.baseSize);
+    return totalAdvance; //
   }
 
 private:

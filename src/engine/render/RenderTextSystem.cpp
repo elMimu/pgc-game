@@ -5,17 +5,20 @@
 void RenderTextSystem::drawFn(World &w, Entity e, RenderText &rt,
                               Transformable &t, GlobalTransformable &gt)
 {
-  constexpr float testFont = 100.0f;
-  Vector2 measuredSize =
-      MeasureTextEx(rt.font, rt.text.c_str(), testFont, rt.spacing);
-
-  float normalizedWidth = measuredSize.x / testFont;
-  float normalizedHeight = measuredSize.y / testFont;
+  float baseWidth = rt.baseWidth;
+  if (rt.dirty)
+  {
+    baseWidth = FontLoader::getBaseTextWidth(rt.text, rt.font);
+  }
 
   Vector2 scale = TransformUtils::getScaleFromMatrix(gt.worldMatrix);
-  float fontSize = scale.x / normalizedWidth * 0.82;
 
-  Vector2 finalSize = {normalizedWidth * fontSize, normalizedHeight * fontSize};
+  float fontSize = (scale.x / baseWidth) * rt.font.baseSize;
+
+  Vector2 finalSize = {
+      baseWidth * fontSize / rt.font.baseSize,
+      rt.font.baseSize * fontSize / rt.font.baseSize // = fontSize
+  };
 
   Vector2 origin = {finalSize.x * t.origin.x, finalSize.y * t.origin.y};
 
@@ -24,7 +27,7 @@ void RenderTextSystem::drawFn(World &w, Entity e, RenderText &rt,
   float rotation = TransformUtils::getDegRotationFromMatrix(gt.worldMatrix);
 
   DrawTextPro(rt.font, rt.text.c_str(), worldPos, origin, rotation, fontSize,
-              rt.spacing, rt.color);
+              0.0f, rt.color);
 }
 
 uint32_t RenderTextSystem::getPriority(Entity e, RenderText &rt,

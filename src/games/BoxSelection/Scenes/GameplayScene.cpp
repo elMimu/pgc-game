@@ -1,10 +1,9 @@
-
 #include "games/BoxSelection/Scenes/GameplayScene.hpp"
 #include "engine/components/GlobalTransformable.hpp"
 #include "engine/components/RenderRectangle.hpp"
+#include "engine/components/RenderText.hpp"
 #include "engine/components/Transformable.hpp"
 #include "engine/core/Types.hpp"
-#include "engine/render/RenderTextSystem.hpp"
 #include "engine/utils/TransformUtils.hpp"
 #include "raylib.h"
 #include <vector>
@@ -45,14 +44,13 @@ void GameplayScene::createTitle()
 {
   Entity titleText = world.entityManager.create();
   world.attach<Transformable>(
-      titleText, Transformable({0.5f, 0.5f}, {0.468f * screenX, 0.1f * screenY},
+      titleText, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.1f * screenY},
                                {1.0f * screenX, 1.0f}, 0.0f, 0));
   world.attach<GlobalTransformable>(titleText, {});
-  // world.attach<RenderRectangle>(titleText, RenderRectangle({5, GREEN}));
+
   world.attach<RenderText>(titleText,
                            RenderText("Clique na caixa com mais items",
-                                      world.fontLoader.get("chewy"), 1, 1.0f,
-                                      WHITE, 5, 0));
+                                      world.fontLoader.get("chewy"), WHITE, 5));
 }
 
 std::vector<Entity> GameplayScene::buildBoxItems(int items, Entity parent)
