@@ -89,5 +89,11 @@ void SceneManager::update(World &world, float dt)
     return;
   }
 
-  sceneStack.back()->onUpdate(dt);
+  if (sceneStack.empty())
+  {
+    std::cout << "empty";
+  }
+
+  sceneStack.back()->inputHandler();
+  // sceneStack.back()->onUpdate(dt);
 }

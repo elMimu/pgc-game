@@ -3,6 +3,7 @@
 #include "engine/components/RenderText.hpp"
 #include "engine/components/Transformable.hpp"
 #include "engine/core/Types.hpp"
+#include "engine/systems/ClickSystem.hpp"
 #include "games/BoxSelection/itemBoxFactory.hpp"
 #include "raylib.h"
 
@@ -36,4 +37,24 @@ void GameplayScene::createTitle()
                                       world.fontLoader.get("chewy"), WHITE, 5));
 }
 
-void GameplayScene::inputHandler() {};
+void GameplayScene::inputHandler()
+{
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+  {
+    auto input = world.getUserState<InputState>();
+    input.pointerDown = true;
+    return;
+  }
+
+  if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+  {
+    auto input = world.getUserState<InputState>();
+    input.pointerPos = GetMousePosition();
+    input.pointerReleased = true;
+    input.pointerDown = false;
+    return;
+  }
+
+  auto input = world.getUserState<InputState>();
+  input.pointerReleased = false;
+};

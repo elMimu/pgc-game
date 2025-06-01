@@ -4,6 +4,7 @@
 #include "engine/components/View.hpp"
 #include "engine/core/Types.hpp"
 #include "engine/entity/EntityManager.hpp"
+#include "engine/state/UserState.hpp"
 #include "engine/utils/FontLoader.hpp"
 #include <tuple>
 
@@ -35,19 +36,24 @@ public:
     return View<Ts...>(std::tie(componentRegistry.get<Ts>()...));
   };
 
-  template <typename T> void setUserState(T *state)
+  template <typename T> void setUserState(T state)
   {
-    userState[typeid(T)] = state;
+    userState[typeid(T)] =
+        std::make_unique<UserStateHolder<T>>(std::move(state));
   }
 
-  template <typename T> T *getUserState()
+  template <typename T> T &getUserState()
   {
     auto it = userState.find(typeid(T));
-    if (it != userState.end())
-      return static_cast<T *>(it->second);
-    return nullptr;
+    if (it == userState.end())
+    {
+      throw std::runtime_error("User state for this type does not exist");
+    }
+
+    auto *holder = static_cast<UserStateHolder<T> *>(it->second.get());
+    return holder->data;
   }
 
 private:
-  std::unordered_map<std::type_index, void *> userState;
+  std::unordered_map<std::type_index, std::unique_ptr<UserStateBase>> userState;
 };
