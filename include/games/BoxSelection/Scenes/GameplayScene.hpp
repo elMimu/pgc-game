@@ -15,9 +15,6 @@ public:
   float w = 1.0f / 4.0f;
   float h = 1.0f / 5.0f;
 
-  std::vector<Entity> leftBoxItems;
-  std::vector<Entity> rightBoxItems;
-
   Entity leftBox;
   Entity rightBox;
 
@@ -25,10 +22,5 @@ public:
   void inputHandler();
   void onLoad();
 
-  std::vector<Entity> buildBoxItems(int items, Entity parent);
-  Entity createBoxItem(Vector2 position, Entity parent, float aspect);
   void createTitle();
-  std::vector<Vector2> mapItemsPosition(int items);
-  std::vector<Vector2> mapEvenItemsPosition(int items);
-  std::vector<Vector2> mapOddItemsPosition(int items);
 };
