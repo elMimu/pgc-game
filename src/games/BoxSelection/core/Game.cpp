@@ -6,6 +6,6 @@ void Game::load(Engine &engine)
 {
   engine.sceneManager.pushScene<GameplayScene>(engine.world);
   engine.world.setUserState<InputState>({});
-  // engine.world.componentRegistry.create<Clickable>();
-  // engine.systemRegistry.registerSystem<ClickSystem>();
+  engine.world.componentRegistry.create<Clickable>();
+  engine.systemRegistry.registerSystem<ClickSystem>();
 }

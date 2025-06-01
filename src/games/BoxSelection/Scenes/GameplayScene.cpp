@@ -4,18 +4,22 @@
 #include "engine/components/Transformable.hpp"
 #include "engine/core/Types.hpp"
 #include "engine/systems/ClickSystem.hpp"
+#include "games/BoxSelection/clickableBoxFactory.hpp"
 #include "games/BoxSelection/itemBoxFactory.hpp"
 #include "raylib.h"
 
-void GameplayScene::onLoad()
-{
+void GameplayScene::onLoad() {
   createTitle();
   constructBoxes();
 }
 
-void GameplayScene::constructBoxes()
-{
-  leftBox = itemBoxFactory::createItemBox(
+void GameplayScene::constructBoxes() {
+  // leftBox = itemBoxFactory::createItemBox(
+  //     world, 9, {0.5f, 0.5f}, {0.25f * screenX, 0.6f * screenY},
+  //     {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE,
+  //     MAGENTA);
+
+  leftBox = ClickableBoxFactory::creatClickableBox(
       world, 9, {0.5f, 0.5f}, {0.25f * screenX, 0.6f * screenY},
       {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA);
 
@@ -24,8 +28,7 @@ void GameplayScene::constructBoxes()
       {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA);
 }
 
-void GameplayScene::createTitle()
-{
+void GameplayScene::createTitle() {
   Entity titleText = world.entityManager.create();
   world.attach<Transformable>(
       titleText, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.1f * screenY},
@@ -37,24 +40,23 @@ void GameplayScene::createTitle()
                                       world.fontLoader.get("chewy"), WHITE, 5));
 }
 
-void GameplayScene::inputHandler()
-{
-  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
-  {
-    auto input = world.getUserState<InputState>();
+void GameplayScene::inputHandler() {
+  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    auto &input = world.getUserState<InputState>();
+    input.pointerPos = GetMousePosition();
     input.pointerDown = true;
     return;
   }
 
-  if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-  {
-    auto input = world.getUserState<InputState>();
+  if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+    auto &input = world.getUserState<InputState>();
+    input.pointerDown = false;
     input.pointerPos = GetMousePosition();
     input.pointerReleased = true;
-    input.pointerDown = false;
     return;
   }
 
-  auto input = world.getUserState<InputState>();
+  auto &input = world.getUserState<InputState>();
   input.pointerReleased = false;
+  input.pointerDown = false;
 };
