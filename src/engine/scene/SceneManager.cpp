@@ -1,49 +1,41 @@
 #include "engine/scene/SceneManager.hpp"
 #include "engine/scene/SceneRequest.hpp"
+#include "raylib.h"
 
-bool SceneManager::currentSceneHasQuery()
-{
+bool SceneManager::currentSceneHasQuery() {
   return sceneStack.back()->request.action != SceneRequest::Action::NONE;
 }
 
-bool SceneManager::currentSceneIsLoaded()
-{
+bool SceneManager::currentSceneIsLoaded() {
   return sceneStack.back()->isLoaded;
 }
 
-void SceneManager::handleSceneRequest(World &world)
-{
+void SceneManager::handleSceneRequest(World &world) {
   SceneRequest &currentSceneRequest = sceneStack.back()->request;
 
-  switch (currentSceneRequest.action)
-  {
+  switch (currentSceneRequest.action) {
   case SceneRequest::Action::PUSH:
-    if (currentSceneRequest.factory)
-    {
+    if (currentSceneRequest.factory) {
       sceneStack.push_back(currentSceneRequest.factory(world));
     }
     break;
 
   case SceneRequest::Action::POP:
-    if (!sceneStack.empty())
-    {
+    if (!sceneStack.empty()) {
       sceneStack.pop_back();
     }
     break;
 
   case SceneRequest::Action::RELOAD:
-    if (!sceneStack.empty())
-    {
+    if (!sceneStack.empty()) {
       sceneStack.back()->onReload();
     }
     break;
 
   case SceneRequest::Action::REPLACE:
-    if (!sceneStack.empty())
-    {
+    if (!sceneStack.empty()) {
       sceneStack.pop_back();
-      if (currentSceneRequest.factory)
-      {
+      if (currentSceneRequest.factory) {
         sceneStack.push_back(currentSceneRequest.factory(world));
       }
     }
@@ -51,8 +43,7 @@ void SceneManager::handleSceneRequest(World &world)
 
   case SceneRequest::Action::CLEAR:
     sceneStack.clear();
-    if (currentSceneRequest.factory)
-    {
+    if (currentSceneRequest.factory) {
       sceneStack.push_back(currentSceneRequest.factory(world));
     }
     break;
@@ -69,26 +60,32 @@ void SceneManager::handleSceneRequest(World &world)
   currentSceneRequest.factory = nullptr;
 }
 
-void SceneManager::update(World &world, float dt)
-{
-  if (sceneStack.empty())
-  {
+void SceneManager::update(World &world, float dt) {
+  if (sceneStack.empty()) {
     return;
   }
 
-  if (currentSceneHasQuery())
-  {
-    handleSceneRequest(world);
+  if (sceneStack.back()->isFinished) {
+    static bool once = true;
+    if (!once) {
+      return;
+    }
+
+    sceneStack.back()->onFinish();
+
+    if (currentSceneHasQuery()) {
+      handleSceneRequest(world);
+    }
+    once = false;
     return;
   }
 
-  if (!currentSceneIsLoaded())
-  {
+  if (!currentSceneIsLoaded()) {
     sceneStack.back()->onLoad();
     sceneStack.back()->isLoaded = true;
     return;
   }
 
   sceneStack.back()->inputHandler();
-  // sceneStack.back()->onUpdate(dt);
+  sceneStack.back()->onUpdate(dt);
 }

@@ -8,19 +8,21 @@
 #include "games/BoxSelection/itemBoxFactory.hpp"
 #include "raylib.h"
 #include <cstdint>
+#include <functional>
 
 class ClickableBoxFactory {
 public:
   static Entity creatClickableBox(World &world, int quantity, Vector2 origin,
                                   Vector2 position, Vector2 size,
                                   float rotation, uint32_t priority,
-                                  Color boxColor, Color itemColor) {
+                                  Color boxColor, Color itemColor,
+                                  std::function<void(Entity)> onRelease) {
     Entity box =
         itemBoxFactory::createItemBox(world, quantity, origin, position, size,
                                       rotation, priority, boxColor, itemColor);
 
     Entity cover = createCover(world, box, priority);
-    setupSystem(world, cover);
+    setupSystem(world, cover, onRelease);
     return box;
   }
 
@@ -37,14 +39,16 @@ private:
     return cover;
   }
 
-  static void setupSystem(World &world, Entity e) {
+  static void setupSystem(World &world, Entity e,
+                          std::function<void(Entity)> onRelease) {
     auto &rectRender = world.get<RenderRectangle>(e);
     world.attach<Clickable>(e, Clickable(
-                                   [&](Entity e) {
+                                   [&rectRender](Entity e) {
                                      rectRender.color.a = 153;
                                      std::cout << "on click\n";
                                    },
-                                   [&](Entity e) {
+                                   [&rectRender, onRelease](Entity e) {
+                                     onRelease(e);
                                      rectRender.color.a = 0;
                                      std::cout << "on release\n";
                                    }));

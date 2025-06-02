@@ -7,33 +7,34 @@
 #include "engine/utils/Random.hpp"
 #include "games/BoxSelection/clickableBoxFactory.hpp"
 #include "games/BoxSelection/gameState.hpp"
-#include "games/BoxSelection/itemBoxFactory.hpp"
 #include "raylib.h"
 
 void GameplayScene::onLoad() {
   // update GameState
   auto &gameState = world.getUserState<GameState>();
-  gameState.leftQtd = getRandomInt(1, 10);
-  gameState.rightQdt = getRandomInt(1, 10);
+  int leftQtd = getRandomInt(1, 10);
+  int rightQtd = leftQtd;
 
-  createTitle();
-  constructBoxes();
-}
+  while (rightQtd == leftQtd) {
+    rightQtd = getRandomInt(1, 10);
+  }
 
-void GameplayScene::constructBoxes() {
-  // leftBox = itemBoxFactory::createItemBox(
-  //     world, 9, {0.5f, 0.5f}, {0.25f * screenX, 0.6f * screenY},
-  //     {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE,
-  //     MAGENTA);
+  gameState.correctChoice = leftQtd > rightQtd ? leftQtd : rightQtd;
 
   leftBox = ClickableBoxFactory::creatClickableBox(
-      world, 9, {0.5f, 0.5f}, {0.25f * screenX, 0.6f * screenY},
-      {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA);
+      world, leftQtd, {0.5f, 0.5f}, {0.25f * screenX, 0.6f * screenY},
+      {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA,
+      [&gameState, leftQtd](Entity e) { gameState.userChoice = leftQtd; });
 
-  rightBox = itemBoxFactory::createItemBox(
-      world, 10, {0.5f, 0.5f}, {0.75f * screenX, 0.6f * screenY},
-      {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA);
+  rightBox = ClickableBoxFactory::creatClickableBox(
+      world, rightQtd, {0.5f, 0.5f}, {0.75f * screenX, 0.6f * screenY},
+      {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA,
+      [&gameState, rightQtd](Entity e) { gameState.userChoice = rightQtd; });
+
+  createTitle();
 }
+
+void GameplayScene::constructBoxes() {}
 
 void GameplayScene::createTitle() {
   Entity titleText = world.entityManager.create();
@@ -47,6 +48,20 @@ void GameplayScene::createTitle() {
                                       world.fontLoader.get("chewy"), WHITE, 5));
 }
 
+void GameplayScene::onUpdate(float dt) {
+  auto& state = world.getUserState<GameState>();
+  if (state.userChoice != 0) {
+    isFinished = true;
+    if (state.userChoice == state.correctChoice) {
+      std::cout << "Muito bom!\n";
+    } else {
+      std::cout << "Não foi dessa vez.\n";
+    }
+  }
+}
+
+void GameplayScene::onFinish() { std::cout << "Game Over\n"; }
+
 void GameplayScene::inputHandler() {
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
     auto &input = world.getUserState<InputState>();
@@ -58,7 +73,6 @@ void GameplayScene::inputHandler() {
   if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
     auto &input = world.getUserState<InputState>();
     input.pointerDown = false;
-    input.pointerPos = GetMousePosition();
     input.pointerReleased = true;
     return;
   }

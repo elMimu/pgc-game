@@ -1,4 +1,6 @@
+#pragma once
+
 struct GameState {
-  int leftQtd = 0;
-  int rightQdt = 0;
+  int correctChoice = 0;
+  int userChoice = 0;
 };
