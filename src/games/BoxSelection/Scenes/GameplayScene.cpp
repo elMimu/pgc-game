@@ -4,11 +4,18 @@
 #include "engine/components/Transformable.hpp"
 #include "engine/core/Types.hpp"
 #include "engine/systems/ClickSystem.hpp"
+#include "engine/utils/Random.hpp"
 #include "games/BoxSelection/clickableBoxFactory.hpp"
+#include "games/BoxSelection/gameState.hpp"
 #include "games/BoxSelection/itemBoxFactory.hpp"
 #include "raylib.h"
 
 void GameplayScene::onLoad() {
+  // update GameState
+  auto &gameState = world.getUserState<GameState>();
+  gameState.leftQtd = getRandomInt(1, 10);
+  gameState.rightQdt = getRandomInt(1, 10);
+
   createTitle();
   constructBoxes();
 }
