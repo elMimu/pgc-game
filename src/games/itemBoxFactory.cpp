@@ -2,13 +2,13 @@
 #include "engine/components/GlobalTransformable.hpp"
 #include "engine/components/RenderRectangle.hpp"
 #include "engine/components/Transformable.hpp"
+#include "engine/components/Visual.hpp"
 #include "engine/utils/TransformUtils.hpp"
 
 Entity itemBoxFactory::createItemBox(World &world, int quantity, Vector2 origin,
                                      Vector2 position, Vector2 size,
                                      float rotation, uint32_t priority,
-                                     Color boxColor, Color itemColor)
-{
+                                     Color boxColor, Color itemColor) {
   Entity box =
       createBox(world, origin, position, size, rotation, priority, boxColor);
   createItems(world, quantity, box, itemColor);
@@ -16,8 +16,7 @@ Entity itemBoxFactory::createItemBox(World &world, int quantity, Vector2 origin,
 }
 
 void itemBoxFactory::createItems(World &world, int quantity, Entity parent,
-                                 Color color)
-{
+                                 Color color) {
   // TODO - improve this exception handler
   float maxWidth = 1.0f / 4.0f;
   float maxHeight = 1.0f / 5.0f;
@@ -27,8 +26,7 @@ void itemBoxFactory::createItems(World &world, int quantity, Entity parent,
   if (quantity > 10)
     quantity = 10;
 
-  for (auto pos : positions)
-  {
+  for (auto pos : positions) {
     createBoxItem(world, pos, parent, color,
 
                   TransformUtils::getAspect(parent, world), maxWidth,
@@ -38,47 +36,43 @@ void itemBoxFactory::createItems(World &world, int quantity, Entity parent,
 
 Entity itemBoxFactory::createBox(World &world, Vector2 origin, Vector2 position,
                                  Vector2 size, float rotation,
-                                 uint32_t priority, Color boxColor)
-{
+                                 uint32_t priority, Color boxColor) {
   Entity box = world.entityManager.create();
   world.attach<Transformable>(box,
                               Transformable(origin, position, size, rotation));
-  world.attach<RenderRectangle>(box, RenderRectangle(priority, boxColor));
+  world.attach<Visual>(box, {boxColor, 0});
+  world.attach<RenderRectangle>(box, {});
   world.attach<GlobalTransformable>(box, {});
   return box;
 }
 
 Entity itemBoxFactory::createBoxItem(World &world, Vector2 position,
                                      Entity parent, Color color, float aspect,
-                                     float maxWidth, float maxHeight)
-{
+                                     float maxWidth, float maxHeight) {
   Entity newEntity = world.entityManager.create();
   world.attach<Transformable>(
       newEntity, Transformable({0.5f, 0.5f}, position,
                                {0.95f * maxWidth, 0.95f * maxHeight * aspect},
                                0.0f, parent));
-  world.attach<RenderRectangle>(newEntity, RenderRectangle({1, color}));
+  world.attach<Visual>(newEntity, Visual({color, 1}));
+  world.attach<RenderRectangle>(newEntity, RenderRectangle({}));
   world.attach<GlobalTransformable>(newEntity, {});
 
   return newEntity;
 }
 
 std::vector<Vector2> itemBoxFactory::mapItemsPosition(int items, float w,
-                                                      float h)
-{
+                                                      float h) {
   bool isEven = (items % 2) == 0;
-  if (isEven)
-  {
+  if (isEven) {
     return mapEvenItemsPosition(items, w, h);
   }
   return mapOddItemsPosition(items, w, h);
 };
 
 std::vector<Vector2> itemBoxFactory::mapEvenItemsPosition(int items, float w,
-                                                          float h)
-{
-  switch (items)
-  {
+                                                          float h) {
+  switch (items) {
   case 2:
     return {
         {0.5f - w / 2.0f, 0.5f},
@@ -123,10 +117,8 @@ std::vector<Vector2> itemBoxFactory::mapEvenItemsPosition(int items, float w,
 };
 
 std::vector<Vector2> itemBoxFactory::mapOddItemsPosition(int items, float w,
-                                                         float h)
-{
-  switch (items)
-  {
+                                                         float h) {
+  switch (items) {
   case 1:
     return {{0.5f, 0.5f}};
   case 3:
