@@ -2,7 +2,6 @@
 
 #include "engine/components/Clickable.hpp"
 #include "engine/components/GlobalTransformable.hpp"
-#include "engine/components/Transformable.hpp"
 #include "engine/state/InputState.hpp"
 #include "engine/systems/System.hpp"
 #include "raylib.h"

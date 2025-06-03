@@ -1,6 +1,5 @@
 #include "engine/scene/SceneManager.hpp"
 #include "engine/scene/SceneRequest.hpp"
-#include "raylib.h"
 
 bool SceneManager::currentSceneHasQuery() {
   return sceneStack.back()->request.action != SceneRequest::Action::NONE;
