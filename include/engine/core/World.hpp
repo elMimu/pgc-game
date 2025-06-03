@@ -2,6 +2,7 @@
 
 #include "engine/components/ComponentRegistry.hpp"
 #include "engine/components/View.hpp"
+#include "engine/core/CommandBuffer.hpp"
 #include "engine/core/Types.hpp"
 #include "engine/entity/EntityManager.hpp"
 #include "engine/state/UserState.hpp"
@@ -13,15 +14,24 @@ class World {
 public:
   EntityManager entityManager;
   ComponentRegistry componentRegistry;
+  CommandBuffer commandBuffer;
   FontLoader fontLoader;
 
   Vector2 getScreenCoord() {
     return Vector2{GetScreenWidth() * 1.0f, GetScreenHeight() * 1.0f};
   };
 
-  void destroyEntity(Entity e) {
-    componentRegistry.dettachFromAllManagers(e);
-    entityManager.destroy(e);
+  void flush() {
+    commandBuffer.flush(entityManager, componentRegistry);
+  }
+
+  void destroy(Entity e) { commandBuffer.destroy(e); }
+
+  void dettachFromAll(Entity e) { commandBuffer.dettachAll(e); }
+
+  template <typename T> void dettach(Entity e) {
+    std::type_index type = std::type_index(typeid(T));
+    commandBuffer.dettach(e, type);
   }
 
   template <typename T> void attach(Entity e, const T &component) {

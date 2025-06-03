@@ -42,6 +42,9 @@ template <typename T> bool ComponentManager<T>::has(Entity e)
 template <typename T> void ComponentManager<T>::remove(Entity e)
 {
   // TODO - HANDLE EXCEPTION - NOT FOUND;
+  if(managerMap.find(e) == managerMap.end()) {
+    return;
+  }
   managerMap.erase(e);
 }
 

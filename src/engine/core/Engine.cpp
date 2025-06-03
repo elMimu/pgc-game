@@ -58,6 +58,7 @@ void Engine::run(IGame &game) {
     sceneManager.update(world, dt);
     renderSystemRegistry.registerAllComponentsJobs(renderJobRegistry, world);
     renderJobRegistry.flush();
+    world.flush();
 
     EndDrawing();
   }

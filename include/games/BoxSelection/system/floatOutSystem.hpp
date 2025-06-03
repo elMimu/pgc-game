@@ -23,8 +23,10 @@ class FloatOutSystem
       return;
     }
 
-    if (isFinished(fo.progress)) {
-      world.destroyEntity(e);
+    if (isFinished(fo.progress) && fo.play) {
+      fo.play = false;
+      world.dettachFromAll(e);
+      world.destroy(e);
       return;
     }
 
