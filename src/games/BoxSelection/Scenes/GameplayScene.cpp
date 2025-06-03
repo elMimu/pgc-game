@@ -2,6 +2,7 @@
 #include "engine/components/GlobalTransformable.hpp"
 #include "engine/components/RenderText.hpp"
 #include "engine/components/Transformable.hpp"
+#include "engine/components/Visual.hpp"
 #include "engine/core/Types.hpp"
 #include "engine/systems/ClickSystem.hpp"
 #include "engine/utils/Random.hpp"
@@ -42,14 +43,15 @@ void GameplayScene::createTitle() {
       titleText, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.1f * screenY},
                                {1.0f * screenX, 1.0f}, 0.0f, 0));
   world.attach<GlobalTransformable>(titleText, {});
+  world.attach<Visual>(titleText, {});
 
   world.attach<RenderText>(titleText,
                            RenderText("Clique na caixa com mais items",
-                                      world.fontLoader.get("chewy"), WHITE, 5));
+                                      world.fontLoader.get("chewy")));
 }
 
 void GameplayScene::onUpdate(float dt) {
-  auto& state = world.getUserState<GameState>();
+  auto &state = world.getUserState<GameState>();
   if (state.userChoice != 0) {
     isFinished = true;
     if (state.userChoice == state.correctChoice) {

@@ -1,13 +1,12 @@
 #include "engine/render/RenderTextSystem.hpp"
+#include "engine/components/Visual.hpp"
 #include "engine/utils/TransformUtils.hpp"
 #include "raylib.h"
 
-void RenderTextSystem::drawFn(World &w, Entity e, RenderText &rt,
-                              Transformable &t, GlobalTransformable &gt)
-{
+void RenderTextSystem::drawFn(World &w, Entity e, RenderText &rt, Visual &v,
+                              Transformable &t, GlobalTransformable &gt) {
   float baseWidth = rt.baseWidth;
-  if (rt.dirty)
-  {
+  if (rt.dirty) {
     baseWidth = FontLoader::getBaseTextWidth(rt.text, rt.font);
   }
 
@@ -27,12 +26,12 @@ void RenderTextSystem::drawFn(World &w, Entity e, RenderText &rt,
   float rotation = TransformUtils::getDegRotationFromMatrix(gt.worldMatrix);
 
   DrawTextPro(rt.font, rt.text.c_str(), worldPos, origin, rotation, fontSize,
-              0.0f, rt.color);
+              0.0f, v.color);
 }
 
-uint32_t RenderTextSystem::getPriority(Entity e, RenderText &rt,
+uint32_t RenderTextSystem::getPriority(Entity e, RenderText &rt, Visual &v,
+
                                        Transformable &t,
-                                       GlobalTransformable &gt)
-{
-  return rt.priority;
+                                       GlobalTransformable &gt) {
+  return v.layer;
 };
