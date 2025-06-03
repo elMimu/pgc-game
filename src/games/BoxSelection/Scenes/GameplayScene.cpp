@@ -6,6 +6,7 @@
 #include "engine/core/Types.hpp"
 #include "engine/systems/ClickSystem.hpp"
 #include "engine/utils/Random.hpp"
+#include "games/BoxSelection/Scenes/FeedbackScene.hpp"
 #include "games/BoxSelection/clickableBoxFactory.hpp"
 #include "games/BoxSelection/gameState.hpp"
 #include "raylib.h"
@@ -33,6 +34,7 @@ void GameplayScene::onLoad() {
       [&gameState, rightQtd](Entity e) { gameState.userChoice = rightQtd; });
 
   createTitle();
+  addRequest<FeedbackScene>(SceneRequest::Action::PUSH);
 }
 
 void GameplayScene::constructBoxes() {}

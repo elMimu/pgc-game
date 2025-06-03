@@ -5,10 +5,8 @@
 #include <memory>
 class Scene;
 
-struct SceneRequest
-{
-  enum class Action
-  {
+struct SceneRequest {
+  enum class Action {
     CLEAR,
     PUSH,
     POP,
@@ -17,5 +15,5 @@ struct SceneRequest
     NONE,
   };
   Action action = Action::NONE;
-  std::function<std::unique_ptr<Scene>(const World &)> factory = nullptr;
+  std::function<std::unique_ptr<Scene>(World &)> factory = nullptr;
 };
