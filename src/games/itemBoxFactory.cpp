@@ -4,6 +4,7 @@
 #include "engine/components/Transformable.hpp"
 #include "engine/components/Visual.hpp"
 #include "engine/utils/TransformUtils.hpp"
+#include "games/BoxSelection/components/itemBoxCounter.hpp"
 
 Entity itemBoxFactory::createItemBox(World &world, int quantity, Vector2 origin,
                                      Vector2 position, Vector2 size,
@@ -20,6 +21,7 @@ void itemBoxFactory::createItems(World &world, int quantity, Entity parent,
   // TODO - improve this exception handler
   float maxWidth = 1.0f / 4.0f;
   float maxHeight = 1.0f / 5.0f;
+
   std::vector<Vector2> positions =
       mapItemsPosition(quantity, maxWidth, maxHeight);
 
@@ -28,7 +30,6 @@ void itemBoxFactory::createItems(World &world, int quantity, Entity parent,
 
   for (auto pos : positions) {
     createBoxItem(world, pos, parent, color,
-
                   TransformUtils::getAspect(parent, world), maxWidth,
                   maxHeight);
   }
@@ -43,6 +44,7 @@ Entity itemBoxFactory::createBox(World &world, Vector2 origin, Vector2 position,
   world.attach<Visual>(box, {boxColor, 0});
   world.attach<RenderRectangle>(box, {});
   world.attach<GlobalTransformable>(box, {});
+  world.attach<ItemBoxCounter>(box, {1.0});
   return box;
 }
 
@@ -50,6 +52,7 @@ Entity itemBoxFactory::createBoxItem(World &world, Vector2 position,
                                      Entity parent, Color color, float aspect,
                                      float maxWidth, float maxHeight) {
   Entity newEntity = world.entityManager.create();
+
   world.attach<Transformable>(
       newEntity, Transformable({0.5f, 0.5f}, position,
                                {0.95f * maxWidth, 0.95f * maxHeight * aspect},
@@ -57,6 +60,10 @@ Entity itemBoxFactory::createBoxItem(World &world, Vector2 position,
   world.attach<Visual>(newEntity, Visual({color, 1}));
   world.attach<RenderRectangle>(newEntity, RenderRectangle({}));
   world.attach<GlobalTransformable>(newEntity, {});
+
+  auto &item = world.get<ItemBoxCounter>(parent);
+
+  item.items.push(newEntity);
 
   return newEntity;
 }

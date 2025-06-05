@@ -4,14 +4,14 @@
 #include <queue>
 #include <set>
 
-class EntityManager
-{
+class EntityManager {
 public:
   static constexpr Entity ENTITY_MAX = 500;
 
   Entity create();
   void destroy(Entity toDelete);
   void print();
+  std::set<Entity> getAll() { return allEntities; }
 
 private:
   Entity nextId = 1;

@@ -23,12 +23,12 @@ void GameplayScene::onLoad() {
 
   gameState.correctChoice = leftQtd > rightQtd ? leftQtd : rightQtd;
 
-  leftBox = ClickableBoxFactory::creatClickableBox(
+  gameState.leftBox = ClickableBoxFactory::creatClickableBox(
       world, leftQtd, {0.5f, 0.5f}, {0.25f * screenX, 0.6f * screenY},
       {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA,
       [&gameState, leftQtd](Entity e) { gameState.userChoice = leftQtd; });
 
-  rightBox = ClickableBoxFactory::creatClickableBox(
+  gameState.rightBox = ClickableBoxFactory::creatClickableBox(
       world, rightQtd, {0.5f, 0.5f}, {0.75f * screenX, 0.6f * screenY},
       {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA,
       [&gameState, rightQtd](Entity e) { gameState.userChoice = rightQtd; });

@@ -25,6 +25,7 @@ class FloatOutSystem
 
     if (isFinished(fo.progress) && fo.play) {
       fo.play = false;
+      fo.callback();
       world.dettachFromAll(e);
       world.destroy(e);
       return;
