@@ -2,10 +2,12 @@
 #include "engine/systems/ClickSystem.hpp"
 #include "games/BoxSelection/Scenes/GameplayScene.hpp"
 #include "games/BoxSelection/components/FloatOut.hpp"
+#include "games/BoxSelection/components/ScaleAnimation.hpp"
 #include "games/BoxSelection/components/itemBoxCounter.hpp"
 #include "games/BoxSelection/gameState.hpp"
 #include "games/BoxSelection/system/floatOutSystem.hpp"
 #include "games/BoxSelection/system/itemBoxCounterSystem.hpp"
+#include "games/BoxSelection/system/scaleAnimationSystem.hpp"
 
 void Game::load(Engine &engine) {
   engine.sceneManager.pushScene<GameplayScene>(engine.world);
@@ -14,7 +16,9 @@ void Game::load(Engine &engine) {
   engine.world.componentRegistry.create<Clickable>();
   engine.world.componentRegistry.create<FloatOut>();
   engine.world.componentRegistry.create<ItemBoxCounter>();
+  engine.world.componentRegistry.create<ScaleAnimation>();
   engine.systemRegistry.registerSystem<ClickSystem>();
   engine.systemRegistry.registerSystem<FloatOutSystem>();
   engine.systemRegistry.registerSystem<itemBoxCounterSystem>();
+  engine.systemRegistry.registerSystem<ScaleAnimationSystem>();
 }

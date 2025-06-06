@@ -1,4 +1,5 @@
 #include "games/BoxSelection/Scenes/FeedbackScene.hpp"
+#include "engine/components/GlobalTransformable.hpp"
 #include "engine/components/RenderRectangle.hpp"
 #include "engine/components/RenderText.hpp"
 #include "engine/components/Transformable.hpp"
@@ -12,12 +13,12 @@
 #include "games/BoxSelection/gameState.hpp"
 #include "raylib.h"
 
-void FeedbackScene::onLoad()
-{
+void FeedbackScene::onLoad() {
   auto &state = world.getUserState<GameState>();
   bool win = hasWon();
 
   Vector2 screen = world.getScreenCoord();
+
   // dialogue
   Entity dialogueBox = world.entityManager.create();
   world.attach<Transformable>(dialogueBox, {{0.5f, 0.5f},
@@ -61,13 +62,11 @@ void FeedbackScene::onLoad()
 }
 
 void FeedbackScene::showTextFeedback(bool win, float screenX, float screenY,
-                                     std::function<void()> callback)
-{
+                                     std::function<void()> callback) {
   std::string text = "Que pena!";
   Color color = RED;
 
-  if (win)
-  {
+  if (win) {
     text = "Muito bem!";
     color = GREEN;
   }
@@ -85,8 +84,7 @@ void FeedbackScene::showTextFeedback(bool win, float screenX, float screenY,
   world.get<FloatOut>(tfb).play = true;
 }
 
-bool FeedbackScene::hasWon()
-{
+bool FeedbackScene::hasWon() {
   auto &state = world.getUserState<GameState>();
 
   return (state.userChoice == state.correctChoice);
