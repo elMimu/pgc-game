@@ -11,5 +11,7 @@ public:
   bool hasWon();
   void showTextFeedback(bool win, float screenX, float screenY,
                         std::function<void()> callback);
+  std::string getTextFromNumber(float n);
+
   void setupCounting();
 };

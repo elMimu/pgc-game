@@ -12,6 +12,8 @@
 #include "games/BoxSelection/feedbackTextFactory.hpp"
 #include "games/BoxSelection/gameState.hpp"
 #include "raylib.h"
+#include <cmath>
+#include <string>
 
 void FeedbackScene::onLoad() {
   auto &state = world.getUserState<GameState>();
@@ -36,13 +38,13 @@ void FeedbackScene::onLoad() {
   world.attach<Visual>(dialogue, {WHITE, 3});
   world.attach<RenderText>(dialogue, {"Vamos contar os items de cada caixa.",
                                       world.fontLoader.get("chewy")});
-  // setup counters
-  //
+  // SETUP COUNTERS
+  // Left
   Entity lCounterBox = world.entityManager.create();
   world.attach<Transformable>(
       lCounterBox,
       {{0.5f, 1.0f},
-       {0.5f, -0.02f},
+       {0.5f, -0.03f},
        {0.3f, 0.3f * TransformUtils::getAspect(state.leftBox, world)},
        0.0f,
        state.leftBox});
@@ -50,7 +52,37 @@ void FeedbackScene::onLoad() {
   world.attach<Visual>(lCounterBox, {BLUE, 2});
   world.attach<RenderRectangle>(lCounterBox, {});
 
-  std::cout << TransformUtils::getAspect(state.leftBox, world) << "\n";
+  Entity lCounter = world.entityManager.create();
+  world.attach<Transformable>(
+      lCounter, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.6f, 1.0f}, 0.0f, lCounterBox});
+  world.attach<GlobalTransformable>(lCounter, {});
+  world.attach<Visual>(lCounter, {WHITE, 3});
+  world.attach<RenderText>(
+      lCounter, {std::to_string(world.get<ItemBoxCounter>(state.leftBox).count),
+                 world.fontLoader.get("chewy")});
+  /////////
+  // right
+  Entity rCounterBox = world.entityManager.create();
+  world.attach<Transformable>(
+      rCounterBox,
+      {{0.5f, 1.0f},
+       {0.5f, -0.03f},
+       {0.3f, 0.3f * TransformUtils::getAspect(state.rightBox, world)},
+       0.0f,
+       state.rightBox});
+  world.attach<GlobalTransformable>(rCounterBox, {});
+  world.attach<Visual>(rCounterBox, {BLUE, 2});
+  world.attach<RenderRectangle>(rCounterBox, {});
+
+  Entity rCounter = world.entityManager.create();
+  world.attach<Transformable>(
+      rCounter, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.6f, 1.0f}, 0.0f, rCounterBox});
+  world.attach<GlobalTransformable>(rCounter, {});
+  world.attach<Visual>(rCounter, {WHITE, 3});
+  world.attach<RenderText>(
+      rCounter,
+      {std::to_string(world.get<ItemBoxCounter>(state.rightBox).count),
+       world.fontLoader.get("chewy")});
 
   // showTextFeedback(win, screen.x, screen.y,
   //                  [&]()
@@ -59,6 +91,13 @@ void FeedbackScene::onLoad() {
   //                        world.get<ItemBoxCounter>(state.leftBox);
   //                    itemBoxCounter.start = true;
   //                  });
+}
+
+std::string FeedbackScene::getTextFromNumber(float n) {
+  if (std::floor(n / 10) < 0) {
+    return "0" + std::to_string(n);
+  }
+  return std::to_string(n);
 }
 
 void FeedbackScene::showTextFeedback(bool win, float screenX, float screenY,
