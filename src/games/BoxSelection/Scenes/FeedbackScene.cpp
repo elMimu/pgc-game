@@ -1,44 +1,73 @@
 #include "games/BoxSelection/Scenes/FeedbackScene.hpp"
+#include "engine/components/RenderRectangle.hpp"
 #include "engine/components/RenderText.hpp"
 #include "engine/components/Transformable.hpp"
 #include "engine/components/Visual.hpp"
 #include "engine/core/Types.hpp"
+#include "engine/utils/TransformUtils.hpp"
+#include "games/BoxSelection/Scenes/GameplayScene.hpp"
 #include "games/BoxSelection/components/FloatOut.hpp"
 #include "games/BoxSelection/components/itemBoxCounter.hpp"
 #include "games/BoxSelection/feedbackTextFactory.hpp"
 #include "games/BoxSelection/gameState.hpp"
 #include "raylib.h"
 
-void FeedbackScene::onLoad() {
+void FeedbackScene::onLoad()
+{
   auto &state = world.getUserState<GameState>();
   bool win = hasWon();
 
-  setupCounting();
-
   Vector2 screen = world.getScreenCoord();
+  // dialogue
+  Entity dialogueBox = world.entityManager.create();
+  world.attach<Transformable>(dialogueBox, {{0.5f, 0.5f},
+                                            {0.5f * screen.x, 0.2f * screen.y},
+                                            {0.8f * screen.x, 0.05f * screen.y},
+                                            0.0f});
+  world.attach<GlobalTransformable>(dialogueBox, {});
+  world.attach<Visual>(dialogueBox, {BLUE, 2});
+  world.attach<RenderRectangle>(dialogueBox, {});
 
-  showTextFeedback(win, screen.x, screen.y, [&]() {
-    auto &itemBoxCounter = world.get<ItemBoxCounter>(state.leftBox);
-    itemBoxCounter.start = true;
-  });
-}
+  Entity dialogue = world.entityManager.create();
+  world.attach<Transformable>(
+      dialogue, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.9f, 0.15f}, 0.0f, dialogueBox});
+  world.attach<GlobalTransformable>(dialogue, {});
+  world.attach<Visual>(dialogue, {WHITE, 3});
+  world.attach<RenderText>(dialogue, {"Vamos contar os items de cada caixa.",
+                                      world.fontLoader.get("chewy")});
+  // setup counters
+  //
+  Entity lCounterBox = world.entityManager.create();
+  world.attach<Transformable>(
+      lCounterBox,
+      {{0.5f, 1.0f},
+       {0.5f, -0.02f},
+       {0.3f, 0.3f * TransformUtils::getAspect(state.leftBox, world)},
+       0.0f,
+       state.leftBox});
+  world.attach<GlobalTransformable>(lCounterBox, {});
+  world.attach<Visual>(lCounterBox, {BLUE, 2});
+  world.attach<RenderRectangle>(lCounterBox, {});
 
-void FeedbackScene::setupCounting() {
-  auto &state = world.getUserState<GameState>();
+  std::cout << TransformUtils::getAspect(state.leftBox, world) << "\n";
 
-  /*world.attach<ItemBoxCounter>(state.leftBox,*/
-  /*                             {state.leftBox, 1.0f, 1.0, []() {}});*/
-
-  /*world.attach<ItemBoxCounter>(state.rightBox,*/
-  /*                             {state.rightBox, 1.0f, 1.0f, []() {}});*/
+  // showTextFeedback(win, screen.x, screen.y,
+  //                  [&]()
+  //                  {
+  //                    auto &itemBoxCounter =
+  //                        world.get<ItemBoxCounter>(state.leftBox);
+  //                    itemBoxCounter.start = true;
+  //                  });
 }
 
 void FeedbackScene::showTextFeedback(bool win, float screenX, float screenY,
-                                     std::function<void()> callback) {
+                                     std::function<void()> callback)
+{
   std::string text = "Que pena!";
   Color color = RED;
 
-  if (win) {
+  if (win)
+  {
     text = "Muito bem!";
     color = GREEN;
   }
@@ -56,7 +85,8 @@ void FeedbackScene::showTextFeedback(bool win, float screenX, float screenY,
   world.get<FloatOut>(tfb).play = true;
 }
 
-bool FeedbackScene::hasWon() {
+bool FeedbackScene::hasWon()
+{
   auto &state = world.getUserState<GameState>();
 
   return (state.userChoice == state.correctChoice);
