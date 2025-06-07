@@ -27,6 +27,10 @@ public:
     for (auto e : toDestroy) {
       manager.destroy(e);
     }
+
+    toDestroy.clear();
+    toDettach.clear();
+    toDettachAll.clear();
   }
 
 private:
