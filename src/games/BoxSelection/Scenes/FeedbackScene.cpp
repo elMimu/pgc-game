@@ -57,9 +57,8 @@ void FeedbackScene::onLoad() {
       lCounter, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.6f, 1.0f}, 0.0f, lCounterBox});
   world.attach<GlobalTransformable>(lCounter, {});
   world.attach<Visual>(lCounter, {WHITE, 3});
-  world.attach<RenderText>(
-      lCounter, {std::to_string(world.get<ItemBoxCounter>(state.leftBox).count),
-                 world.fontLoader.get("chewy")});
+  world.attach<RenderText>(lCounter, {"1", world.fontLoader.get("chewy")});
+
   /////////
   // right
   Entity rCounterBox = world.entityManager.create();
@@ -84,20 +83,24 @@ void FeedbackScene::onLoad() {
       {std::to_string(world.get<ItemBoxCounter>(state.rightBox).count),
        world.fontLoader.get("chewy")});
 
-  // showTextFeedback(win, screen.x, screen.y,
-  //                  [&]()
-  //                  {
-  //                    auto &itemBoxCounter =
-  //                        world.get<ItemBoxCounter>(state.leftBox);
-  //                    itemBoxCounter.start = true;
-  //                  });
-}
+  auto &rCounterItemBox = world.get<ItemBoxCounter>(state.rightBox);
+  auto &rCounterRender = world.get<RenderText>(rCounter);
+  rCounterItemBox.onCount = [&rCounterRender, &rCounterItemBox]() {
+    rCounterRender.text = std::to_string(rCounterItemBox.count);
+  };
 
-std::string FeedbackScene::getTextFromNumber(float n) {
-  if (std::floor(n / 10) < 0) {
-    return "0" + std::to_string(n);
-  }
-  return std::to_string(n);
+  auto &lCounterItemBox = world.get<ItemBoxCounter>(state.leftBox);
+  auto &lCounterRender = world.get<RenderText>(lCounter);
+  lCounterItemBox.onCount = [&lCounterRender, &lCounterItemBox]() {
+    lCounterRender.text = std::to_string(lCounterItemBox.count);
+  };
+
+  lCounterItemBox.onFinish = [&rCounterItemBox]() {
+    rCounterItemBox.start = true;
+  };
+
+  showTextFeedback(win, screen.x, screen.y,
+                   [&lCounterItemBox]() { lCounterItemBox.start = true; });
 }
 
 void FeedbackScene::showTextFeedback(bool win, float screenX, float screenY,

@@ -5,6 +5,7 @@
 #include "engine/components/Visual.hpp"
 #include "engine/utils/TransformUtils.hpp"
 #include "games/BoxSelection/components/itemBoxCounter.hpp"
+#include "raylib.h"
 
 Entity itemBoxFactory::createItemBox(World &world, int quantity, Vector2 origin,
                                      Vector2 position, Vector2 size,
@@ -44,7 +45,7 @@ Entity itemBoxFactory::createBox(World &world, Vector2 origin, Vector2 position,
   world.attach<Visual>(box, {boxColor, 0});
   world.attach<RenderRectangle>(box, {});
   world.attach<GlobalTransformable>(box, {});
-  world.attach<ItemBoxCounter>(box, {1.0});
+  world.attach<ItemBoxCounter>(box, {1.0, YELLOW});
   return box;
 }
 
