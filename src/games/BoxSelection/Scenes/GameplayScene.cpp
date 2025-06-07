@@ -34,10 +34,7 @@ void GameplayScene::onLoad() {
       [&gameState, rightQtd](Entity e) { gameState.userChoice = rightQtd; });
 
   createTitle();
-  addRequest<FeedbackScene>(SceneRequest::Action::PUSH);
 }
-
-void GameplayScene::constructBoxes() {}
 
 void GameplayScene::createTitle() {
   Entity titleText = world.entityManager.create();
@@ -53,14 +50,11 @@ void GameplayScene::createTitle() {
 }
 
 void GameplayScene::onUpdate(float dt) {
+  static int a = 0;
   auto &state = world.getUserState<GameState>();
   if (state.userChoice != 0) {
-    isFinished = true;
-    if (state.userChoice == state.correctChoice) {
-      std::cout << "Muito bom!\n";
-    } else {
-      std::cout << "Não foi dessa vez.\n";
-    }
+    std::cout << ++a << "\n";
+    addRequest<FeedbackScene>(SceneRequest::Action::PUSH);
   }
 }
 

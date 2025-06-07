@@ -15,12 +15,14 @@ class itemBoxCounterSystem : public System<ItemBoxCounter, Visual> {
     if (count.timeElapsed != count.delay) {
       count.timeElapsed = std::clamp(count.timeElapsed + dt, 0.0f, count.delay);
       return;
-    } else if (count.items.empty()) {
-      count.start = false;
+    } else {
+      if (count.items.empty()) {
+        count.start = false;
 
-      count.onFinish();
+        count.onFinish();
 
-      return;
+        return;
+      }
     }
 
     Entity current = count.items.front();

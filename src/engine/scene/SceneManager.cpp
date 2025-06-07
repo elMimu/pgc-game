@@ -16,23 +16,37 @@ void SceneManager::handleSceneRequest(World &world) {
   case SceneRequest::Action::PUSH:
     if (currentSceneRequest.factory) {
       sceneStack.push_back(currentSceneRequest.factory(world));
+      auto &previewsScene = sceneStack[sceneStack.size() - 2];
+      previewsScene->clearRequest();
     }
     break;
 
   case SceneRequest::Action::POP:
     if (!sceneStack.empty()) {
+      sceneStack.back()->isFinished = true;
+      sceneStack.back()->onFinish();
+      sceneStack.back()->clearRequest();
       sceneStack.pop_back();
     }
     break;
 
   case SceneRequest::Action::RELOAD:
     if (!sceneStack.empty()) {
+      sceneStack.back()->isFinished = true;
+      sceneStack.back()->onFinish();
+      sceneStack.back()->clearRequest();
+      sceneStack.pop_back();
+      sceneStack.back()->clearRequest();
       sceneStack.back()->onReload();
+      sceneStack.back()->isLoaded = false;
     }
     break;
 
   case SceneRequest::Action::REPLACE:
     if (!sceneStack.empty()) {
+      sceneStack.back()->isFinished = true;
+      sceneStack.back()->onFinish();
+      sceneStack.back()->clearRequest();
       sceneStack.pop_back();
       if (currentSceneRequest.factory) {
         sceneStack.push_back(currentSceneRequest.factory(world));
@@ -41,6 +55,8 @@ void SceneManager::handleSceneRequest(World &world) {
     break;
 
   case SceneRequest::Action::CLEAR:
+    sceneStack.back()->isFinished = true;
+    sceneStack.back()->onFinish();
     sceneStack.clear();
     if (currentSceneRequest.factory) {
       sceneStack.push_back(currentSceneRequest.factory(world));
@@ -65,23 +81,27 @@ void SceneManager::update(World &world, float dt) {
   }
 
   if (sceneStack.back()->isFinished) {
-    static bool once = true;
-    if (!once) {
+    if (sceneStack.back()->onFinishCalled) {
       return;
     }
 
     sceneStack.back()->onFinish();
+    sceneStack.back()->onFinishCalled = true;
 
     if (currentSceneHasQuery()) {
       handleSceneRequest(world);
+      return;
     }
-    once = false;
-    return;
   }
 
   if (!currentSceneIsLoaded()) {
     sceneStack.back()->onLoad();
     sceneStack.back()->isLoaded = true;
+    return;
+  }
+
+  if (currentSceneHasQuery()) {
+    handleSceneRequest(world);
     return;
   }
 

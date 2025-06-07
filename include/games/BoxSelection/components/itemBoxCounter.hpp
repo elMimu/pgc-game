@@ -20,6 +20,6 @@ struct ItemBoxCounter {
       float delay, Color countColor = WHITE, std::queue<Entity> items = {},
       std::function<void()> onCount = []() {},
       std::function<void()> onFinish = []() {})
-      : delay(delay), countColor(countColor), timeElapsed(delay), items(items),
+      : delay(delay), countColor(countColor), timeElapsed(0.0f), items(items),
         onCount(onCount), onFinish(onFinish) {}
 };

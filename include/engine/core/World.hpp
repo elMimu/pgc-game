@@ -21,9 +21,7 @@ public:
     return Vector2{GetScreenWidth() * 1.0f, GetScreenHeight() * 1.0f};
   };
 
-  void flush() {
-    commandBuffer.flush(entityManager, componentRegistry);
-  }
+  void flush() { commandBuffer.flush(entityManager, componentRegistry); }
 
   void destroy(Entity e) { commandBuffer.destroy(e); }
 
@@ -34,8 +32,8 @@ public:
     commandBuffer.dettach(e, type);
   }
 
-  template <typename T> void attach(Entity e, const T &component) {
-    componentRegistry.get<T>().attach(e, component);
+  template <typename T> T &attach(Entity e, const T &component) {
+    return componentRegistry.get<T>().attach(e, component);
   }
 
   template <typename T> T &get(Entity e) {

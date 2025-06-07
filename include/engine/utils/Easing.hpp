@@ -2,6 +2,8 @@
 #include <cmath>
 
 namespace Easing {
+inline float easeLinear(float x) { return x; }
+
 inline float easeInQuad(float x) { return x * x; }
 
 inline float easeOutQuad(float x) { return 1 - (1 - x) * (1 - x); }
@@ -17,6 +19,13 @@ inline float easeInBack(float x) {
   float c3 = c1 + 1;
 
   return c3 * x * x * x - c1 * x * x;
+}
+
+inline float easeOutBack(float x) {
+  float c1 = 1.70158;
+  float c3 = c1 + 1;
+
+  return 1 + c3 * std::pow(x - 1, 3) + c1 * std::pow(x - 1, 2);
 }
 
 inline float easeOutBounce(float x) {

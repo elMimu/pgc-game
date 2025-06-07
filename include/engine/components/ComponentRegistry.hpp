@@ -37,19 +37,19 @@ public:
     return false;
   }
 
-  template <typename C> void create() {
+  template <typename C> ComponentManager<C> &create() {
     std::type_index type = std::type_index(typeid(C));
 
     if (isRegistered(type)) {
       // TODO - HANDLE LOG - MANAGER EXISTS.
       std::cout << "Manager for Component" << type.name() << "already created."
                 << "\n";
-      return;
     }
 
     auto itemPtr = std::make_unique<ComponentManager<C>>();
     ComponentManager<C> &itemRef = *itemPtr;
     allManagers[type] = std::move(itemPtr);
+    return itemRef;
   }
 
   template <typename T> void dettachComponent(Entity e) {

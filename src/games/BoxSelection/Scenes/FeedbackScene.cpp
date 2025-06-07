@@ -6,130 +6,256 @@
 #include "engine/components/Visual.hpp"
 #include "engine/core/Types.hpp"
 #include "engine/utils/TransformUtils.hpp"
-#include "games/BoxSelection/Scenes/GameplayScene.hpp"
 #include "games/BoxSelection/components/FloatOut.hpp"
+#include "games/BoxSelection/components/ScaleLerp.hpp"
 #include "games/BoxSelection/components/itemBoxCounter.hpp"
-#include "games/BoxSelection/feedbackTextFactory.hpp"
 #include "games/BoxSelection/gameState.hpp"
 #include "raylib.h"
+#include <algorithm>
 #include <cmath>
 #include <string>
 
 void FeedbackScene::onLoad() {
   auto &state = world.getUserState<GameState>();
-  bool win = hasWon();
 
-  Vector2 screen = world.getScreenCoord();
+  textFeedback = createTextFeedback();
 
-  // dialogue
-  Entity dialogueBox = world.entityManager.create();
-  world.attach<Transformable>(dialogueBox, {{0.5f, 0.5f},
-                                            {0.5f * screen.x, 0.2f * screen.y},
-                                            {0.8f * screen.x, 0.05f * screen.y},
-                                            0.0f});
+  dialogueBox = createDialogueBox();
+  dialogue = createDialogue("Vamos contar os items de cada caixa.");
+
+  lCounterBox = createCounterBox(state.leftBox);
+  lCounterText = createCounterText(lCounterBox);
+
+  rCounterBox = createCounterBox(state.rightBox);
+  rCounterText = createCounterText(rCounterBox);
+
+  action = SHOW_TEXT_FEEDBACK;
+}
+
+void FeedbackScene::onUpdate(float dt) {
+  if (action == IDLE) {
+    return;
+  }
+
+  if (action == SHOW_TEXT_FEEDBACK) {
+    std::cout << textFeedback << "\n";
+    auto &floatAnim = world.get<FloatOut>(textFeedback);
+    std::cout << "loaded feedback scene\n";
+    floatAnim.callback = [this]() { this->action = POP_IN_FIRST_DIALOG; };
+    floatAnim.play = true;
+    action = IDLE;
+  }
+
+  if (action == POP_IN_FIRST_DIALOG) {
+    auto &popAnim = world.get<ScaleLerp>(dialogueBox);
+    auto [screenX, screenY] = world.getScreenCoord();
+    popAnim.speed = 2.0f;
+    popAnim.easing = Easing::easeInQuad;
+    popAnim.callback = [this]() { this->action = POP_IN_COUNTERS; };
+    popAnim.to = {0.9f * screenX, 0.1f * screenY};
+    action = IDLE;
+  }
+
+  if (action == POP_IN_COUNTERS) {
+    /*{0.3f, 0.3f * TransformUtils::getAspect(parent, world)},*/
+    auto &state = world.getUserState<GameState>();
+    auto &leftPopAnim = world.get<ScaleLerp>(lCounterBox);
+    auto &rightPopAnim = world.get<ScaleLerp>(rCounterBox);
+    /**/
+    leftPopAnim.speed = 3.0f;
+    leftPopAnim.easing = Easing::easeInQuad;
+    leftPopAnim.to = {0.3f,
+                      0.3f * TransformUtils::getAspect(state.leftBox, world)};
+    rightPopAnim.speed = 3.0f;
+    rightPopAnim.easing = Easing::easeInQuad;
+    rightPopAnim.callback = [this]() { this->action = START_COUNTING; };
+    rightPopAnim.to = {0.3f,
+                       0.3f * TransformUtils::getAspect(state.rightBox, world)};
+
+    action = IDLE;
+  }
+
+  if (action == START_COUNTING) {
+    auto &state = world.getUserState<GameState>();
+    auto &lText = world.get<RenderText>(lCounterText);
+    auto &rText = world.get<RenderText>(rCounterText);
+
+    auto &lCount = world.get<ItemBoxCounter>(state.leftBox);
+    auto &rCount = world.get<ItemBoxCounter>(state.rightBox);
+
+    lCount.onCount = [&lText, &lCount, this]() {
+      lText.text = getTextFromInt(lCount.count);
+    };
+
+    rCount.onCount = [&rText, &rCount, this]() {
+      rText.text = getTextFromInt(rCount.count);
+    };
+
+    lCount.onFinish = [&rCount]() { rCount.start = true; };
+    rCount.onFinish = [this]() { this->action = POP_OUT_DIALOG; };
+
+    lCount.start = true;
+
+    action = IDLE;
+  }
+
+  if (action == POP_OUT_DIALOG) {
+    auto &state = world.getUserState<GameState>();
+    auto &dialogBoxScale = world.get<ScaleLerp>(dialogueBox);
+    auto &dialogueText = world.get<RenderText>(dialogue);
+    Vector2 tmp = dialogBoxScale.from;
+
+    dialogBoxScale.to = {0.0f, 0.0f};
+    dialogBoxScale.callback = [this]() { this->action = POP_IN_NEW_DIALOG; };
+
+    action = IDLE;
+  }
+
+  if (action == POP_IN_NEW_DIALOG) {
+    auto [screenX, screenY] = world.getScreenCoord();
+    Vector2 to = {0.9f * screenX, 0.1f * screenY};
+    auto &state = world.getUserState<GameState>();
+    auto &dialogBoxScale = world.get<ScaleLerp>(dialogueBox);
+    auto &dialogueText = world.get<RenderText>(dialogue);
+
+    dialogueText.text =
+        "A caixa com mais items possui " + std::to_string(state.correctChoice);
+    dialogBoxScale.to = to;
+    dialogBoxScale.callback = [this]() { this->action = WAIT; };
+
+    action = IDLE;
+  }
+
+  if (action == WAIT) {
+    waitOnResult = std::clamp(waitOnResult - dt, 0.0f, waitOnResult);
+    if (waitOnResult <= 0) {
+      action = POP_OUT_ALL_INFO;
+    }
+  }
+
+  if (action == POP_OUT_ALL_INFO) {
+    static int popOuted = 0;
+    auto &dialogBoxScale = world.get<ScaleLerp>(dialogueBox);
+    auto &lCounterBoxScale = world.get<ScaleLerp>(lCounterBox);
+    auto &rCounterBoxScale = world.get<ScaleLerp>(rCounterBox);
+
+    Vector2 zero = {0.0f, 0.0f};
+
+    dialogBoxScale.callback = [this]() {};
+
+    lCounterBoxScale.callback = [this]() {};
+
+    rCounterBoxScale.callback = [this]() {
+      addRequest(SceneRequest::Action::POP);
+    };
+
+    dialogBoxScale.to = zero;
+    lCounterBoxScale.to = zero;
+    rCounterBoxScale.to = zero;
+
+    action = IDLE;
+  }
+}
+
+void FeedbackScene::onFinish() {
+  /*world.dettachFromAll(lCounterText);*/
+  /*world.dettachFromAll(lCounterBox);*/
+  /*world.destroy(lCounterText);*/
+  /*world.destroy(lCounterBox);*/
+  /*world.dettachFromAll(rCounterText);*/
+  /*world.dettachFromAll(rCounterBox);*/
+  /*world.destroy(rCounterText);*/
+  /*world.destroy(rCounterBox);*/
+}
+
+Entity FeedbackScene::createCounterBox(Entity parent) {
+  auto &state = world.getUserState<GameState>();
+  auto &parentT = world.get<Transformable>(parent);
+
+  Entity counterBox = world.entityManager.create();
+  world.attach<Transformable>(
+      counterBox, {{0.5f, 0.5f},
+                   {0.5f, -0.1f},
+                   {0.0f, 0.0f},
+                   /*{0.3f, 0.3f * TransformUtils::getAspect(parent, world)},*/
+                   0.0f,
+                   parent});
+  world.attach<GlobalTransformable>(counterBox, {});
+  world.attach<Visual>(counterBox, {BLUE, 2});
+  world.attach<RenderRectangle>(counterBox, {});
+  world.attach<ScaleLerp>(counterBox, {0.0f, 0.0f});
+
+  return counterBox;
+}
+
+Entity FeedbackScene::createCounterText(Entity parent) {
+  Entity counterText = world.entityManager.create();
+  world.attach<Transformable>(
+      counterText, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.6f, 1.0f}, 0.0f, parent});
+  world.attach<GlobalTransformable>(counterText, {});
+  world.attach<Visual>(counterText, {WHITE, 3});
+  world.attach<RenderText>(counterText, {"00", world.fontLoader.get("chewy")});
+
+  return counterText;
+}
+
+Entity FeedbackScene::createDialogue(std::string text) {
+  Entity dialogue = world.entityManager.create();
+  world.attach<Transformable>(
+      dialogue, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.9f, 1.0f}, 0.0f, dialogueBox});
+  world.attach<GlobalTransformable>(dialogue, {});
+  world.attach<Visual>(dialogue, {WHITE, 3});
+  world.attach<RenderText>(dialogue, {text, world.fontLoader.get("chewy")});
+
+  return dialogue;
+}
+
+Entity FeedbackScene::createDialogueBox() {
+  auto [screenX, screenY] = world.getScreenCoord();
+  dialogueBox = world.entityManager.create();
+  world.attach<Transformable>(
+      dialogueBox,
+      {{0.5f, 0.5f}, {0.5f * screenX, 0.15f * screenY}, {0.0f, 0.0f}, 0.0f});
   world.attach<GlobalTransformable>(dialogueBox, {});
   world.attach<Visual>(dialogueBox, {BLUE, 2});
   world.attach<RenderRectangle>(dialogueBox, {});
+  world.attach<ScaleLerp>(dialogueBox, {{0.0f, 0.0f}});
 
-  Entity dialogue = world.entityManager.create();
-  world.attach<Transformable>(
-      dialogue, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.9f, 0.15f}, 0.0f, dialogueBox});
-  world.attach<GlobalTransformable>(dialogue, {});
-  world.attach<Visual>(dialogue, {WHITE, 3});
-  world.attach<RenderText>(dialogue, {"Vamos contar os items de cada caixa.",
-                                      world.fontLoader.get("chewy")});
-  // SETUP COUNTERS
-  // Left
-  Entity lCounterBox = world.entityManager.create();
-  world.attach<Transformable>(
-      lCounterBox,
-      {{0.5f, 1.0f},
-       {0.5f, -0.03f},
-       {0.3f, 0.3f * TransformUtils::getAspect(state.leftBox, world)},
-       0.0f,
-       state.leftBox});
-  world.attach<GlobalTransformable>(lCounterBox, {});
-  world.attach<Visual>(lCounterBox, {BLUE, 2});
-  world.attach<RenderRectangle>(lCounterBox, {});
-
-  Entity lCounter = world.entityManager.create();
-  world.attach<Transformable>(
-      lCounter, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.6f, 1.0f}, 0.0f, lCounterBox});
-  world.attach<GlobalTransformable>(lCounter, {});
-  world.attach<Visual>(lCounter, {WHITE, 3});
-  world.attach<RenderText>(lCounter, {"1", world.fontLoader.get("chewy")});
-
-  /////////
-  // right
-  Entity rCounterBox = world.entityManager.create();
-  world.attach<Transformable>(
-      rCounterBox,
-      {{0.5f, 1.0f},
-       {0.5f, -0.03f},
-       {0.3f, 0.3f * TransformUtils::getAspect(state.rightBox, world)},
-       0.0f,
-       state.rightBox});
-  world.attach<GlobalTransformable>(rCounterBox, {});
-  world.attach<Visual>(rCounterBox, {BLUE, 2});
-  world.attach<RenderRectangle>(rCounterBox, {});
-
-  Entity rCounter = world.entityManager.create();
-  world.attach<Transformable>(
-      rCounter, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.6f, 1.0f}, 0.0f, rCounterBox});
-  world.attach<GlobalTransformable>(rCounter, {});
-  world.attach<Visual>(rCounter, {WHITE, 3});
-  world.attach<RenderText>(
-      rCounter,
-      {std::to_string(world.get<ItemBoxCounter>(state.rightBox).count),
-       world.fontLoader.get("chewy")});
-
-  auto &rCounterItemBox = world.get<ItemBoxCounter>(state.rightBox);
-  auto &rCounterRender = world.get<RenderText>(rCounter);
-  rCounterItemBox.onCount = [&rCounterRender, &rCounterItemBox]() {
-    rCounterRender.text = std::to_string(rCounterItemBox.count);
-  };
-
-  auto &lCounterItemBox = world.get<ItemBoxCounter>(state.leftBox);
-  auto &lCounterRender = world.get<RenderText>(lCounter);
-  lCounterItemBox.onCount = [&lCounterRender, &lCounterItemBox]() {
-    lCounterRender.text = std::to_string(lCounterItemBox.count);
-  };
-
-  lCounterItemBox.onFinish = [&rCounterItemBox]() {
-    rCounterItemBox.start = true;
-  };
-
-  showTextFeedback(win, screen.x, screen.y,
-                   [&lCounterItemBox]() { lCounterItemBox.start = true; });
+  return dialogueBox;
 }
 
-void FeedbackScene::showTextFeedback(bool win, float screenX, float screenY,
-                                     std::function<void()> callback) {
-  std::string text = "Que pena!";
-  Color color = RED;
+Entity FeedbackScene::createTextFeedback() {
+  bool win = hasWon();
+  std::string text = win ? "Muito Bem" : "Que Pena!";
+  Color color = win ? GREEN : RED;
+  auto [screenX, screenY] = world.getScreenCoord();
 
-  if (win) {
-    text = "Muito bem!";
-    color = GREEN;
-  }
-
-  tfb = FeedbackTextFactory::create(
-      world,
-      Transformable({0.5, 0.5}, {0.5f * screenX, 0.5f * screenY}, {0.0f, 0.0f},
-                    0.0f),
-      Visual(color, 3), RenderText(text, world.fontLoader.get("chewy")),
-      FloatOut({screenX * 0.5f, screenY * 0.4f},
-               {screenX * 0.5f, screenY * 0.1f}, {0.0f, 0.0f},
-               {screenX * 0.6f, screenY * 1.0f}, 1.0f, Easing::easeOutBounce,
-               callback));
-
-  world.get<FloatOut>(tfb).play = true;
+  Entity textFeedback = world.entityManager.create();
+  world.attach<Transformable>(
+      textFeedback, Transformable({0.5, 0.5}, {0.5f * screenX, 0.5f * screenY},
+                                  {0.0f, 0.0f}, 0.0f));
+  world.attach<GlobalTransformable>(textFeedback, {});
+  world.attach<Visual>(textFeedback, {color, 3});
+  world.attach<RenderText>(textFeedback, {text, world.fontLoader.get("chewy")});
+  world.attach<FloatOut>(
+      textFeedback, FloatOut({screenX * 0.5f, screenY * 0.4f},
+                             {screenX * 0.5f, screenY * 0.1f}, {0.0f, 0.0f},
+                             {screenX * 0.6f, screenY * 1.0f}, 1.0f,
+                             Easing::easeOutBounce, []() {}));
+  return textFeedback;
 }
 
 bool FeedbackScene::hasWon() {
   auto &state = world.getUserState<GameState>();
 
   return (state.userChoice == state.correctChoice);
+}
+
+std::string FeedbackScene::getTextFromInt(int n) {
+  if (n / 10 == 0) {
+    return "0" + std::to_string(n);
+  }
+  return std::to_string(n);
 }
 
 void FeedbackScene::inputHandler() {}
