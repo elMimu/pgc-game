@@ -20,7 +20,8 @@ Entity itemBoxFactory::createItemBox(World &world, int quantity, Vector2 origin,
 void itemBoxFactory::createItems(World &world, int quantity, Entity parent,
                                  Color color) {
   // TODO - improve this exception handler
-  float maxWidth = 1.0f / 4.0f;
+  /*float maxWidth = 1.0f / 4.0f;*/
+  float maxWidth = 1.0f / 5.0f;
   float maxHeight = 1.0f / 5.0f;
 
   std::vector<Vector2> positions =
@@ -55,12 +56,13 @@ Entity itemBoxFactory::createBoxItem(World &world, Vector2 position,
   Entity newEntity = world.entityManager.create();
 
   world.attach<Transformable>(
-      newEntity, Transformable({0.5f, 0.5f}, position,
-                               {0.95f * maxWidth, 0.95f * maxHeight * aspect},
-                               0.0f, parent));
-  world.attach<Visual>(newEntity, Visual({color, 1}));
-  world.attach<RenderRectangle>(newEntity, RenderRectangle({}));
+      newEntity,
+      Transformable({0.5f, 0.5f}, position,
+                    /*{0.95f * maxWidth, 0.95f * maxHeight}, 0.0f, parent));*/
+                    {0.95f * maxWidth, 0.45f * maxHeight}, 0.0f, parent));
+  world.attach<Visual>(newEntity, Visual({color, 5}));
   world.attach<GlobalTransformable>(newEntity, {});
+  world.attach<RenderRectangle>(newEntity, RenderRectangle({}));
 
   auto &item = world.get<ItemBoxCounter>(parent);
 

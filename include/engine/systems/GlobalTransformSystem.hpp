@@ -5,11 +5,11 @@
 #include "engine/systems/System.hpp"
 #include "engine/utils/TransformUtils.hpp"
 
-class GlobalTransformSystem : public System<GlobalTransformable, Transformable>
-{
+class GlobalTransformSystem
+    : public System<GlobalTransformable, Transformable> {
   void updateEntity(World &world, Entity e, float dt,
-                    GlobalTransformable &globalT, Transformable &t) override
-  {
-    globalT.worldMatrix = TransformUtils::getWorldMatrix(world, e, t);
+                    GlobalTransformable &globalT, Transformable &t) override {
+    globalT.worldMatrix = TransformUtils::getParentMatrix(world, e);
+    /*globalT.worldMatrix = TransformUtils::getWorldMatrix(world, e, t);*/
   };
 };

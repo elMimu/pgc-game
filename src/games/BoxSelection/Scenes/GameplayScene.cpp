@@ -8,6 +8,8 @@
 #include "engine/utils/Random.hpp"
 #include "games/BoxSelection/Scenes/FeedbackScene.hpp"
 #include "games/BoxSelection/clickableBoxFactory.hpp"
+#include "games/BoxSelection/components/ScaleLerp.hpp"
+#include "games/BoxSelection/components/itemBoxCounter.hpp"
 #include "games/BoxSelection/gameState.hpp"
 #include "raylib.h"
 
@@ -23,17 +25,22 @@ void GameplayScene::onLoad() {
 
   gameState.correctChoice = leftQtd > rightQtd ? leftQtd : rightQtd;
 
-  gameState.leftBox = ClickableBoxFactory::creatClickableBox(
+  leftBox = ClickableBoxFactory::creatClickableBox(
       world, leftQtd, {0.5f, 0.5f}, {0.25f * screenX, 0.6f * screenY},
-      {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA,
+      {0.0, 0.0f}, 0.0f, 0, BLUE, MAGENTA,
       [&gameState, leftQtd](Entity e) { gameState.userChoice = leftQtd; });
 
-  gameState.rightBox = ClickableBoxFactory::creatClickableBox(
+  rightBox = ClickableBoxFactory::creatClickableBox(
       world, rightQtd, {0.5f, 0.5f}, {0.75f * screenX, 0.6f * screenY},
-      {0.5f * screenX - widthPadding, 0.5f * screenY}, 0.0f, 0, BLUE, MAGENTA,
+      {0.0f, 0.0f}, 0.0f, 0, BLUE, MAGENTA,
       [&gameState, rightQtd](Entity e) { gameState.userChoice = rightQtd; });
 
+  gameState.leftBox = leftBox;
+  gameState.rightBox = rightBox;
+
   createTitle();
+
+  action = POP_BOXES;
 }
 
 void GameplayScene::createTitle() {
@@ -50,15 +57,89 @@ void GameplayScene::createTitle() {
 }
 
 void GameplayScene::onUpdate(float dt) {
-  static int a = 0;
-  auto &state = world.getUserState<GameState>();
-  if (state.userChoice != 0) {
-    std::cout << ++a << "\n";
-    addRequest<FeedbackScene>(SceneRequest::Action::PUSH);
+  if (action == IDLE) {
+    return;
+  }
+
+  if (action == POP_BOXES) {
+    world.attach<ScaleLerp>(leftBox,
+                            {0.5f * screenX - widthPadding, 0.5f * screenY});
+    world.attach<ScaleLerp>(rightBox,
+                            {{0.5f * screenX - widthPadding, 0.5f * screenY},
+                             1.0f,
+                             [this]() { action = GAME; }});
+    action = IDLE;
+  }
+
+  if (action == GAME) {
+    auto &state = world.getUserState<GameState>();
+    if (state.userChoice != 0) {
+      addRequest<FeedbackScene>(SceneRequest::Action::PUSH);
+      action = IDLE;
+    }
+  }
+
+  if (action == POP_OUT_BOXES) {
+    std::cout << "abc\n";
+    auto &lBoxScale = world.get<ScaleLerp>(leftBox);
+    lBoxScale.to = {0.0f, 0.0f};
+    auto &rBoxScale = world.get<ScaleLerp>(rightBox);
+    rBoxScale.to = {0.0f, 0.0f};
+    rBoxScale.callback = [this]() { action = DESTROY_BOXES; };
+
+    action = IDLE;
+  }
+
+  if (action == DESTROY_BOXES) {
+    auto entities = world.entityManager.getAll();
+    for (auto e : entities) {
+      auto &t = world.get<Transformable>(e);
+      if (t.parent == leftBox || t.parent == rightBox) {
+        world.dettachFromAll(e);
+        world.destroy(e);
+      }
+    }
+
+    world.dettachFromAll(leftBox);
+    world.destroy(leftBox);
+    world.dettachFromAll(rightBox);
+    world.destroy(rightBox);
+
+    isLoaded = false;
+
+    action = IDLE;
   }
 }
 
+void GameplayScene::clearBox(Entity e) {};
+
 void GameplayScene::onFinish() { std::cout << "Game Over\n"; }
+
+void GameplayScene::onReload() {
+  // Reset game state
+  auto &state = world.getUserState<GameState>();
+  state.userChoice = 0;
+  state.correctChoice = 0;
+
+  std::cout << "bigger\n";
+
+  action = POP_OUT_BOXES;
+
+  // Destroy scene entities
+  /*auto entities = world.entityManager.getAll();*/
+  /*for (auto e : entities) {*/
+  /*  auto &t = world.get<Transformable>(e);*/
+  /*  if (t.parent == leftBox || t.parent == rightBox) {*/
+  /*    world.dettachFromAll(e);*/
+  /*    world.destroy(e);*/
+  /*  }*/
+  /*}*/
+
+  /*world.dettachFromAll(leftBox);*/
+  /*world.destroy(leftBox);*/
+  /*world.dettachFromAll(rightBox);*/
+  /*world.destroy(rightBox);*/
+}
 
 void GameplayScene::inputHandler() {
   if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {

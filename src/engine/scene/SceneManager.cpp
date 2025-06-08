@@ -38,7 +38,6 @@ void SceneManager::handleSceneRequest(World &world) {
       sceneStack.pop_back();
       sceneStack.back()->clearRequest();
       sceneStack.back()->onReload();
-      sceneStack.back()->isLoaded = false;
     }
     break;
 

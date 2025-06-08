@@ -38,9 +38,7 @@ void FeedbackScene::onUpdate(float dt) {
   }
 
   if (action == SHOW_TEXT_FEEDBACK) {
-    std::cout << textFeedback << "\n";
     auto &floatAnim = world.get<FloatOut>(textFeedback);
-    std::cout << "loaded feedback scene\n";
     floatAnim.callback = [this]() { this->action = POP_IN_FIRST_DIALOG; };
     floatAnim.play = true;
     action = IDLE;
@@ -146,7 +144,7 @@ void FeedbackScene::onUpdate(float dt) {
     lCounterBoxScale.callback = [this]() {};
 
     rCounterBoxScale.callback = [this]() {
-      addRequest(SceneRequest::Action::POP);
+      addRequest(SceneRequest::Action::RELOAD);
     };
 
     dialogBoxScale.to = zero;
@@ -158,14 +156,14 @@ void FeedbackScene::onUpdate(float dt) {
 }
 
 void FeedbackScene::onFinish() {
-  /*world.dettachFromAll(lCounterText);*/
-  /*world.dettachFromAll(lCounterBox);*/
-  /*world.destroy(lCounterText);*/
-  /*world.destroy(lCounterBox);*/
-  /*world.dettachFromAll(rCounterText);*/
-  /*world.dettachFromAll(rCounterBox);*/
-  /*world.destroy(rCounterText);*/
-  /*world.destroy(rCounterBox);*/
+  world.dettachFromAll(lCounterText);
+  world.dettachFromAll(lCounterBox);
+  world.destroy(lCounterText);
+  world.destroy(lCounterBox);
+  world.dettachFromAll(rCounterText);
+  world.dettachFromAll(rCounterBox);
+  world.destroy(rCounterText);
+  world.destroy(rCounterBox);
 }
 
 Entity FeedbackScene::createCounterBox(Entity parent) {
