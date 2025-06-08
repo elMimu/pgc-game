@@ -32,6 +32,10 @@ public:
     commandBuffer.dettach(e, type);
   }
 
+  template <typename T> bool has(Entity e) {
+    return componentRegistry.get<T>().has(e);
+  }
+
   template <typename T> T &attach(Entity e, const T &component) {
     return componentRegistry.get<T>().attach(e, component);
   }

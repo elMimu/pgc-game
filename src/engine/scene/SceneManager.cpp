@@ -45,10 +45,10 @@ void SceneManager::handleSceneRequest(World &world) {
     if (!sceneStack.empty()) {
       sceneStack.back()->isFinished = true;
       sceneStack.back()->onFinish();
-      sceneStack.back()->clearRequest();
       sceneStack.pop_back();
       if (currentSceneRequest.factory) {
         sceneStack.push_back(currentSceneRequest.factory(world));
+        sceneStack.back()->clearRequest();
       }
     }
     break;

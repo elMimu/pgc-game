@@ -4,14 +4,16 @@
 #include "engine/components/Transformable.hpp"
 #include "engine/components/Visual.hpp"
 #include "engine/core/Types.hpp"
+#include "engine/scene/SceneRequest.hpp"
 #include "engine/systems/ClickSystem.hpp"
 #include "engine/utils/Random.hpp"
 #include "games/BoxSelection/Scenes/FeedbackScene.hpp"
+#include "games/BoxSelection/Scenes/ScoreScene.hpp"
 #include "games/BoxSelection/clickableBoxFactory.hpp"
 #include "games/BoxSelection/components/ScaleLerp.hpp"
-#include "games/BoxSelection/components/itemBoxCounter.hpp"
 #include "games/BoxSelection/gameState.hpp"
 #include "raylib.h"
+#include <algorithm>
 
 void GameplayScene::onLoad() {
   // update GameState
@@ -44,7 +46,7 @@ void GameplayScene::onLoad() {
 }
 
 void GameplayScene::createTitle() {
-  Entity titleText = world.entityManager.create();
+  titleText = world.entityManager.create();
   world.attach<Transformable>(
       titleText, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.05f * screenY},
                                {0.8f * screenX, 1.0f}, 0.0f, 0));
@@ -80,7 +82,6 @@ void GameplayScene::onUpdate(float dt) {
   }
 
   if (action == POP_OUT_BOXES) {
-    std::cout << "abc\n";
     auto &lBoxScale = world.get<ScaleLerp>(leftBox);
     lBoxScale.to = {0.0f, 0.0f};
     auto &rBoxScale = world.get<ScaleLerp>(rightBox);
@@ -91,54 +92,89 @@ void GameplayScene::onUpdate(float dt) {
   }
 
   if (action == DESTROY_BOXES) {
-    auto entities = world.entityManager.getAll();
-    for (auto e : entities) {
-      auto &t = world.get<Transformable>(e);
-      if (t.parent == leftBox || t.parent == rightBox) {
-        world.dettachFromAll(e);
-        world.destroy(e);
+    clearItemBoxes();
+    isLoaded = false;
+    action = IDLE;
+  }
+
+  if (action == CLEAR_BACKGROUND) {
+    for (auto e : toClear) {
+      if (world.has<Visual>(e)) {
+        auto &v = world.get<Visual>(e);
+        v.color.a = std::clamp(v.color.a - 255.0f * dt, 0.0f, 255.0f);
+      }
+    }
+    bool allOut = true;
+
+    for (auto e : toClear) {
+      if (world.has<Visual>(e)) {
+        auto &v = world.get<Visual>(e);
+        if (v.color.a != 0) {
+          allOut = false;
+        }
       }
     }
 
-    world.dettachFromAll(leftBox);
-    world.destroy(leftBox);
-    world.dettachFromAll(rightBox);
-    world.destroy(rightBox);
+    if (!allOut) {
+      return;
+    }
 
-    isLoaded = false;
-
+    for (auto e : toClear) {
+      world.dettachFromAll(e);
+      world.destroy(e);
+    }
     action = IDLE;
+    addRequest<ScoreScene>(SceneRequest::Action::REPLACE);
   }
 }
 
-void GameplayScene::clearBox(Entity e) {};
+void GameplayScene::clearItemBoxes() {
+  auto entities = world.entityManager.getAll();
+  for (auto e : entities) {
+    auto &t = world.get<Transformable>(e);
+    if (t.parent == leftBox || t.parent == rightBox) {
+      world.dettachFromAll(e);
+      world.destroy(e);
+    }
+  }
 
-void GameplayScene::onFinish() { std::cout << "Game Over\n"; }
+  world.dettachFromAll(leftBox);
+  world.destroy(leftBox);
+  world.dettachFromAll(rightBox);
+  world.destroy(rightBox);
+};
+
+void GameplayScene::onFinish() {}
 
 void GameplayScene::onReload() {
   // Reset game state
   auto &state = world.getUserState<GameState>();
   state.userChoice = 0;
   state.correctChoice = 0;
+  state.currentRound -= 1;
 
-  std::cout << "bigger\n";
+  if (state.currentRound == 0) {
+    auto entities = world.entityManager.getAll();
+
+    for (auto e : entities) {
+      auto &t = world.get<Transformable>(e);
+      if (t.parent == titleText || t.parent == rightBox ||
+          t.parent == leftBox) {
+        if (world.has<Visual>(e)) {
+          toClear.push_back(e);
+        }
+      }
+    }
+
+    toClear.push_back(titleText);
+    toClear.push_back(leftBox);
+    toClear.push_back(rightBox);
+
+    action = CLEAR_BACKGROUND;
+    return;
+  }
 
   action = POP_OUT_BOXES;
-
-  // Destroy scene entities
-  /*auto entities = world.entityManager.getAll();*/
-  /*for (auto e : entities) {*/
-  /*  auto &t = world.get<Transformable>(e);*/
-  /*  if (t.parent == leftBox || t.parent == rightBox) {*/
-  /*    world.dettachFromAll(e);*/
-  /*    world.destroy(e);*/
-  /*  }*/
-  /*}*/
-
-  /*world.dettachFromAll(leftBox);*/
-  /*world.destroy(leftBox);*/
-  /*world.dettachFromAll(rightBox);*/
-  /*world.destroy(rightBox);*/
 }
 
 void GameplayScene::inputHandler() {

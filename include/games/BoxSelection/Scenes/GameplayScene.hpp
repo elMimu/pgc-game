@@ -1,6 +1,7 @@
 #pragma once
 #include "engine/core/Types.hpp"
 #include "engine/scene/Scene.hpp"
+#include <vector>
 
 class GameplayScene : public Scene {
 public:
@@ -11,6 +12,7 @@ public:
     GAME,
     POP_OUT_BOXES,
     DESTROY_BOXES,
+    CLEAR_BACKGROUND
   };
   Action action = IDLE;
   int screenX = 360;
@@ -22,9 +24,11 @@ public:
 
   Entity leftBox;
   Entity rightBox;
+  Entity titleText;
 
   Entity userChoice = 0;
   Entity correctChoice = 0;
+  std::vector<Entity> toClear;
 
   void constructBoxes();
   void inputHandler() override;
@@ -32,7 +36,7 @@ public:
   void onUpdate(float dt) override;
   void onFinish() override;
   void onReload() override;
-  void clearBox(Entity e);
+  void clearItemBoxes();
 
   void createTitle();
 };
