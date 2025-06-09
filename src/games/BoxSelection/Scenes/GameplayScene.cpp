@@ -4,6 +4,7 @@
 #include "engine/components/Transformable.hpp"
 #include "engine/components/Visual.hpp"
 #include "engine/core/Types.hpp"
+#include "engine/core/UserInput.hpp"
 #include "engine/scene/SceneRequest.hpp"
 #include "engine/systems/ClickSystem.hpp"
 #include "engine/utils/Random.hpp"
@@ -181,14 +182,17 @@ void GameplayScene::onReload() {
 }
 
 void GameplayScene::inputHandler() {
-  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+  input.Update();
+  auto click = input.GetClick();
+
+  if (click.pressed) {
     auto &input = world.getUserState<InputState>();
-    input.pointerPos = GetMousePosition();
+    input.pointerPos = click.position;
     input.pointerDown = true;
     return;
   }
 
-  if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+  if (click.released) {
     auto &input = world.getUserState<InputState>();
     input.pointerDown = false;
     input.pointerReleased = true;

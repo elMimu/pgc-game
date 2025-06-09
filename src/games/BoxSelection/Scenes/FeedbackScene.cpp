@@ -246,7 +246,7 @@ Entity FeedbackScene::createTextFeedback() {
       textFeedback, Transformable({0.5, 0.5}, {0.5f * screenX, 0.5f * screenY},
                                   {0.0f, 0.0f}, 0.0f));
   world.attach<GlobalTransformable>(textFeedback, {});
-  world.attach<Visual>(textFeedback, {color, 3});
+  world.attach<Visual>(textFeedback, {color, 5});
   world.attach<RenderText>(textFeedback,
                            {text, world.fontLoader.get(constants::primFont)});
   world.attach<FloatOut>(

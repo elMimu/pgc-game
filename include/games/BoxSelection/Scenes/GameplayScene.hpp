@@ -1,10 +1,12 @@
 #pragma once
 #include "engine/core/Types.hpp"
+#include "engine/core/UserInput.hpp"
 #include "engine/scene/Scene.hpp"
 #include <vector>
 
 class GameplayScene : public Scene {
 public:
+  UserInput::InputTracker input;
   GameplayScene(World &world) : Scene(world) {};
   enum Action {
     IDLE,
