@@ -30,6 +30,8 @@ void Engine::createDefaultSystems() {
 void Engine::loadDefaultFonts() {
   world.fontLoader.loadFontEx("chewy",
                               RESOURCES_PATH "fonts/Chewy-Regular.ttf");
+  world.fontLoader.loadFontEx("jetMono",
+                              RESOURCES_PATH "fonts/jetBrainsMono.ttf");
 }
 
 void Engine::registerDefaultRenderSystems() {

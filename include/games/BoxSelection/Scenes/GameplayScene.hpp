@@ -24,6 +24,7 @@ public:
   float w = 1.0f / 5.0f;
   float h = 1.0f / 5.0f;
 
+  void reloadObjects();
   Entity leftBox;
   Entity rightBox;
   Entity titleText;

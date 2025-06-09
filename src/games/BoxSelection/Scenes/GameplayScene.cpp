@@ -19,6 +19,11 @@
 
 void GameplayScene::onLoad() {
   // update GameState
+  titleText = createTitle();
+  reloadObjects();
+}
+
+void GameplayScene::reloadObjects() {
   auto &gameState = world.getUserState<GameState>();
   int leftQtd = getRandomInt(1, 10);
   int rightQtd = leftQtd;
@@ -41,8 +46,6 @@ void GameplayScene::onLoad() {
 
   gameState.leftBox = leftBox;
   gameState.rightBox = rightBox;
-
-  titleText = createTitle();
 
   action = POP_BOXES;
 }
@@ -97,8 +100,8 @@ void GameplayScene::onUpdate(float dt) {
 
   if (action == DESTROY_BOXES) {
     clearItemBoxes();
-    isLoaded = false;
     action = IDLE;
+    reloadObjects();
   }
 
   if (action == CLEAR_BACKGROUND) {

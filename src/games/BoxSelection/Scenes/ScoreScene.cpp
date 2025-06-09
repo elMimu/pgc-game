@@ -40,7 +40,7 @@ void ScoreScene::onLoad() {
 
   Entity scoreText = world.entityManager.create();
   world.attach<Transformable>(
-      scoreText, {{0.5f, 0.5f}, {0.5f, 0.6f}, {0.6f, 1.0f}, 0.0f, messageBox});
+      scoreText, {{0.5f, 0.5f}, {0.5f, 0.6f}, {0.4f, 1.0f}, 0.0f, messageBox});
 
   world.attach<GlobalTransformable>(scoreText, {});
   world.attach<Visual>(scoreText, {WHITE, 2});
