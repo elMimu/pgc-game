@@ -54,7 +54,7 @@ Matrix getParentMatrix(World &w, Entity e) {
   }
 
   return MatrixMultiply(getLocalMatrix(t),
-                        getLocalMatrix(w.get<Transformable>(t.parent)));
+                        getParentMatrix(w,t.parent));
 }
 
 WorldMatrixResult getSafeWorldMatrix(World &w, Entity e, Transformable &t) {

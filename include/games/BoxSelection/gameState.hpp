@@ -3,7 +3,7 @@
 #include "engine/core/Types.hpp"
 
 struct GameState {
-  int rounds = 1;
+  int rounds = 3;
   int currentRound = rounds;
   int correctChoice = 0;
   int userChoice = 0;

@@ -11,6 +11,7 @@
 #include "games/BoxSelection/Scenes/ScoreScene.hpp"
 #include "games/BoxSelection/clickableBoxFactory.hpp"
 #include "games/BoxSelection/components/ScaleLerp.hpp"
+#include "games/BoxSelection/constants.hpp"
 #include "games/BoxSelection/gameState.hpp"
 #include "raylib.h"
 #include <algorithm>
@@ -48,14 +49,14 @@ void GameplayScene::onLoad() {
 void GameplayScene::createTitle() {
   titleText = world.entityManager.create();
   world.attach<Transformable>(
-      titleText, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.05f * screenY},
+      titleText, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.08f * screenY},
                                {0.8f * screenX, 1.0f}, 0.0f, 0));
   world.attach<GlobalTransformable>(titleText, {});
   world.attach<Visual>(titleText, {});
 
-  world.attach<RenderText>(titleText,
-                           RenderText("Clique na caixa com mais items",
-                                      world.fontLoader.get("chewy")));
+  world.attach<RenderText>(
+      titleText, RenderText("Clique na caixa com mais items",
+                            world.fontLoader.get(constants::primFont)));
 }
 
 void GameplayScene::onUpdate(float dt) {
@@ -64,11 +65,12 @@ void GameplayScene::onUpdate(float dt) {
   }
 
   if (action == POP_BOXES) {
-    world.attach<ScaleLerp>(leftBox,
-                            {0.5f * screenX - widthPadding, 0.5f * screenY});
+    world.attach<ScaleLerp>(
+        leftBox,
+        {{0.5f * screenX - widthPadding, 0.5f * screenY}, constants::popSpeed});
     world.attach<ScaleLerp>(rightBox,
                             {{0.5f * screenX - widthPadding, 0.5f * screenY},
-                             1.0f,
+                             constants::popSpeed,
                              [this]() { action = GAME; }});
     action = IDLE;
   }
@@ -104,18 +106,18 @@ void GameplayScene::onUpdate(float dt) {
         v.color.a = std::clamp(v.color.a - 255.0f * dt, 0.0f, 255.0f);
       }
     }
-    bool allOut = true;
+    bool allFaded = true;
 
     for (auto e : toClear) {
       if (world.has<Visual>(e)) {
         auto &v = world.get<Visual>(e);
         if (v.color.a != 0) {
-          allOut = false;
+          allFaded = false;
         }
       }
     }
 
-    if (!allOut) {
+    if (!allFaded) {
       return;
     }
 

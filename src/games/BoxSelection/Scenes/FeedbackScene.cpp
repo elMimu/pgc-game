@@ -9,6 +9,7 @@
 #include "games/BoxSelection/components/FloatOut.hpp"
 #include "games/BoxSelection/components/ScaleLerp.hpp"
 #include "games/BoxSelection/components/itemBoxCounter.hpp"
+#include "games/BoxSelection/constants.hpp"
 #include "games/BoxSelection/gameState.hpp"
 #include "raylib.h"
 #include <algorithm>
@@ -47,7 +48,7 @@ void FeedbackScene::onUpdate(float dt) {
   if (action == POP_IN_FIRST_DIALOG) {
     auto &popAnim = world.get<ScaleLerp>(dialogueBox);
     auto [screenX, screenY] = world.getScreenCoord();
-    popAnim.speed = 2.0f;
+    popAnim.speed = constants::popSpeed;
     popAnim.easing = Easing::easeInQuad;
     popAnim.callback = [this]() { this->action = POP_IN_COUNTERS; };
     popAnim.to = {0.9f * screenX, 0.1f * screenY};
@@ -60,11 +61,11 @@ void FeedbackScene::onUpdate(float dt) {
     auto &leftPopAnim = world.get<ScaleLerp>(lCounterBox);
     auto &rightPopAnim = world.get<ScaleLerp>(rCounterBox);
     /**/
-    leftPopAnim.speed = 3.0f;
+    leftPopAnim.speed = constants::popSpeed;
     leftPopAnim.easing = Easing::easeInQuad;
     leftPopAnim.to = {0.3f,
                       0.3f * TransformUtils::getAspect(state.leftBox, world)};
-    rightPopAnim.speed = 3.0f;
+    rightPopAnim.speed = constants::popSpeed;
     rightPopAnim.easing = Easing::easeInQuad;
     rightPopAnim.callback = [this]() { this->action = START_COUNTING; };
     rightPopAnim.to = {0.3f,
@@ -89,7 +90,10 @@ void FeedbackScene::onUpdate(float dt) {
       rText.text = getTextFromInt(rCount.count);
     };
 
-    lCount.onFinish = [&rCount]() { rCount.start = true; };
+    lCount.onFinish = [&rCount]() {
+      rCount.timeElapsed = 1.0f;
+      rCount.start = true;
+    };
     rCount.onFinish = [this]() { this->action = POP_OUT_DIALOG; };
 
     lCount.start = true;
@@ -173,7 +177,7 @@ Entity FeedbackScene::createCounterBox(Entity parent) {
   Entity counterBox = world.entityManager.create();
   world.attach<Transformable>(
       counterBox, {{0.5f, 0.5f},
-                   {0.5f, -0.1f},
+                   {0.5f, -0.12f},
                    {0.0f, 0.0f},
                    /*{0.3f, 0.3f * TransformUtils::getAspect(parent, world)},*/
                    0.0f,
@@ -192,7 +196,8 @@ Entity FeedbackScene::createCounterText(Entity parent) {
       counterText, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.6f, 1.0f}, 0.0f, parent});
   world.attach<GlobalTransformable>(counterText, {});
   world.attach<Visual>(counterText, {WHITE, 3});
-  world.attach<RenderText>(counterText, {"00", world.fontLoader.get("chewy")});
+  world.attach<RenderText>(counterText,
+                           {"00", world.fontLoader.get(constants::primFont)});
 
   return counterText;
 }
@@ -203,7 +208,8 @@ Entity FeedbackScene::createDialogue(std::string text) {
       dialogue, {{0.5f, 0.5f}, {0.5f, 0.5f}, {0.9f, 1.0f}, 0.0f, dialogueBox});
   world.attach<GlobalTransformable>(dialogue, {});
   world.attach<Visual>(dialogue, {WHITE, 3});
-  world.attach<RenderText>(dialogue, {text, world.fontLoader.get("chewy")});
+  world.attach<RenderText>(dialogue,
+                           {text, world.fontLoader.get(constants::primFont)});
 
   return dialogue;
 }
@@ -213,7 +219,7 @@ Entity FeedbackScene::createDialogueBox() {
   dialogueBox = world.entityManager.create();
   world.attach<Transformable>(
       dialogueBox,
-      {{0.5f, 0.5f}, {0.5f * screenX, 0.15f * screenY}, {0.0f, 0.0f}, 0.0f});
+      {{0.5f, 0.5f}, {0.5f * screenX, 0.18f * screenY}, {0.0f, 0.0f}, 0.0f});
   world.attach<GlobalTransformable>(dialogueBox, {});
   world.attach<Visual>(dialogueBox, {BLUE, 2});
   world.attach<RenderRectangle>(dialogueBox, {});
@@ -234,7 +240,7 @@ Entity FeedbackScene::createTextFeedback() {
                                   {0.0f, 0.0f}, 0.0f));
   world.attach<GlobalTransformable>(textFeedback, {});
   world.attach<Visual>(textFeedback, {color, 3});
-  world.attach<RenderText>(textFeedback, {text, world.fontLoader.get("chewy")});
+  world.attach<RenderText>(textFeedback, {text, world.fontLoader.get(constants::primFont)});
   world.attach<FloatOut>(
       textFeedback, FloatOut({screenX * 0.5f, screenY * 0.4f},
                              {screenX * 0.5f, screenY * 0.1f}, {0.0f, 0.0f},
