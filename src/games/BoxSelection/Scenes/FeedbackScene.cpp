@@ -40,7 +40,14 @@ void FeedbackScene::onUpdate(float dt) {
 
   if (action == SHOW_TEXT_FEEDBACK) {
     auto &floatAnim = world.get<FloatOut>(textFeedback);
-    floatAnim.callback = [this]() { this->action = POP_IN_FIRST_DIALOG; };
+    auto &state = world.getUserState<GameState>();
+    floatAnim.callback = [this, &state]() {
+      if (state.userChoice == state.correctChoice) {
+        this->action = IDLE;
+        addRequest(SceneRequest::Action::RELOAD);
+      }
+      this->action = POP_IN_FIRST_DIALOG;
+    };
     floatAnim.play = true;
     action = IDLE;
   }
@@ -240,10 +247,11 @@ Entity FeedbackScene::createTextFeedback() {
                                   {0.0f, 0.0f}, 0.0f));
   world.attach<GlobalTransformable>(textFeedback, {});
   world.attach<Visual>(textFeedback, {color, 3});
-  world.attach<RenderText>(textFeedback, {text, world.fontLoader.get(constants::primFont)});
+  world.attach<RenderText>(textFeedback,
+                           {text, world.fontLoader.get(constants::primFont)});
   world.attach<FloatOut>(
-      textFeedback, FloatOut({screenX * 0.5f, screenY * 0.4f},
-                             {screenX * 0.5f, screenY * 0.1f}, {0.0f, 0.0f},
+      textFeedback, FloatOut({screenX * 0.5f, screenY * 0.5f},
+                             {screenX * 0.5f, screenY * 0.2f}, {0.0f, 0.0f},
                              {screenX * 0.6f, screenY * 1.0f}, 1.0f,
                              Easing::easeOutBounce, []() {}));
   return textFeedback;

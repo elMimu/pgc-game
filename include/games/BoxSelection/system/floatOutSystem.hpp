@@ -5,6 +5,7 @@
 #include "engine/components/Visual.hpp"
 #include "engine/systems/System.hpp"
 #include "games/BoxSelection/components/FloatOut.hpp"
+#include "games/BoxSelection/constants.hpp"
 #include "raylib.h"
 #include "raymath.h"
 #include <algorithm>
@@ -36,7 +37,13 @@ class FloatOutSystem
     t.size = Vector2Lerp(fo.startScale, fo.endScale, fo.easing(fo.progress));
     gt.dirty = true;
 
-    fo.progress = std::clamp(fo.progress + fo.speed * dt, 0.0f, 1.0f);
+    if (fo.progress >= 0.8) {
+      fo.progress =
+          std::clamp(fo.progress + (fo.speed * constants::slowFloatFactor) * dt,
+                     0.0f, 1.0f);
+    } else {
+      fo.progress = std::clamp(fo.progress + fo.speed * dt, 0.0f, 1.0f);
+    }
   }
 
   void load(FloatOut &fo, Visual &v, Transformable &t,

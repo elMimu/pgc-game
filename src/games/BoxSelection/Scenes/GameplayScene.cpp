@@ -41,22 +41,23 @@ void GameplayScene::onLoad() {
   gameState.leftBox = leftBox;
   gameState.rightBox = rightBox;
 
-  createTitle();
+  titleText = createTitle();
 
   action = POP_BOXES;
 }
 
-void GameplayScene::createTitle() {
-  titleText = world.entityManager.create();
+Entity GameplayScene::createTitle() {
+  Entity title = world.entityManager.create();
   world.attach<Transformable>(
-      titleText, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.08f * screenY},
-                               {0.8f * screenX, 1.0f}, 0.0f, 0));
-  world.attach<GlobalTransformable>(titleText, {});
-  world.attach<Visual>(titleText, {});
+      title, Transformable({0.5f, 0.5f}, {0.5f * screenX, 0.08f * screenY},
+                           {0.8f * screenX, 1.0f}, 0.0f, 0));
+  world.attach<GlobalTransformable>(title, {});
+  world.attach<Visual>(title, {WHITE, 1});
 
   world.attach<RenderText>(
-      titleText, RenderText("Clique na caixa com mais items",
-                            world.fontLoader.get(constants::primFont)));
+      title, RenderText("Clique na caixa com mais items",
+                        world.fontLoader.get(constants::primFont)));
+  return title;
 }
 
 void GameplayScene::onUpdate(float dt) {

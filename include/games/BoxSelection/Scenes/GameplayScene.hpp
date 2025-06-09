@@ -38,5 +38,5 @@ public:
   void onReload() override;
   void clearItemBoxes();
 
-  void createTitle();
+  Entity createTitle();
 };
