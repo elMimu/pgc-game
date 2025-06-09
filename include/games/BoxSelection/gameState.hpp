@@ -7,7 +7,7 @@ struct GameState {
   int currentRound = rounds;
   int correctChoice = 0;
   int userChoice = 0;
-  float score = 0.0f;
+  int score = 0;
   Entity leftBox;
   Entity rightBox;
 };

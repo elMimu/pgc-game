@@ -43,6 +43,7 @@ void FeedbackScene::onUpdate(float dt) {
     auto &state = world.getUserState<GameState>();
     floatAnim.callback = [this, &state]() {
       if (state.userChoice == state.correctChoice) {
+        state.score += 1;
         this->action = IDLE;
         addRequest(SceneRequest::Action::RELOAD);
       }
