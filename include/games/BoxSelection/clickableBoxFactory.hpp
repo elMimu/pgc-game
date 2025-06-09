@@ -43,15 +43,11 @@ private:
   static void setupSystem(World &world, Entity e,
                           std::function<void(Entity)> onRelease) {
     auto &visual = world.get<Visual>(e);
-    world.attach<Clickable>(e, Clickable(
-                                   [&visual](Entity e) {
-                                     visual.color.a = 153;
-                                     std::cout << "on click\n";
-                                   },
-                                   [&visual, onRelease](Entity e) {
-                                     onRelease(e);
-                                     visual.color.a = 0;
-                                     std::cout << "on release\n";
-                                   }));
+    world.attach<Clickable>(
+        e, Clickable([&visual](Entity e) { visual.color.a = 153; },
+                     [&visual, onRelease](Entity e) {
+                       onRelease(e);
+                       visual.color.a = 0;
+                     }));
   }
 };
